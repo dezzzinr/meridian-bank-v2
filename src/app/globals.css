@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-manrope), "Manrope", ui-sans-serif, system-ui,
+    sans-serif;
+  --font-display: var(--font-grotesk), "Space Grotesk", var(--font-manrope),
+    ui-sans-serif, sans-serif;
+
+  --color-paper: #f4f3ee;
+  --color-card: #fdfdfb;
+  --color-ink: #1c221f;
+  --color-ink-soft: #5b655f;
+  --color-ink-faint: #8b948d;
+  --color-line: #e4e1d6;
+  --color-line-soft: #edeadf;
+  --color-brand: #0f5a48;
+  --color-brand-deep: #0a4033;
+  --color-brand-soft: #e2eee8;
+  --color-night: #0c1411;
+  --color-night-2: #15221c;
+  --color-amber: #91600a;
+  --color-amber-soft: #f7edd4;
+  --color-rose: #b02a3c;
+  --color-rose-soft: #f9e8eb;
+  --color-good: #1f7a4d;
+  --color-good-soft: #e3f1e8;
+
+  --shadow-card: 0 1px 2px rgb(24 28 26 / 0.04),
+    0 4px 16px -8px rgb(24 28 26 / 0.08);
+}
+
+@layer components {
+  .input {
+    @apply w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-sm font-medium text-ink outline-none transition placeholder:font-normal placeholder:text-ink-faint focus:border-brand focus:ring-2 focus:ring-brand/15 disabled:cursor-not-allowed disabled:bg-paper disabled:text-ink-soft;
+  }
+  .label {
+    @apply mb-1.5 block text-[13px] font-semibold text-ink;
+  }
+  .card {
+    @apply rounded-xl border border-line bg-card shadow-card;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-deep active:scale-[0.98] disabled:pointer-events-none disabled:opacity-55;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-card px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-paper active:scale-[0.98] disabled:pointer-events-none disabled:opacity-55;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-rose px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8f2131] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-55;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes drawer {
+  from {
+    transform: translateX(100%);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes drawer-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-rise {
+  animation: rise 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-fade {
+  animation: fade 0.2s ease-out both;
+}
+.animate-drawer {
+  animation: drawer 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-drawer-left {
+  animation: drawer-left 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+::selection {
+  background: #cfe4d9;
+}
+
+html {
+  scrollbar-color: #c8c4b6 transparent;
+}
