@@ -16,9 +16,16 @@ export function LoginForm() {
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [demoBusy, setDemoBusy] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
 
   // If a valid session already exists (e.g. signed in earlier), go straight in.
   useEffect(() => {
+    const isDemoEntry = new URLSearchParams(window.location.search).get("demo") === "1";
+    setDemoMode(isDemoEntry);
+    if (isDemoEntry) {
+      setEmail(DEMO_EMAIL);
+      setPassword(DEMO_PASSWORD);
+    }
     if (!getToken()) return;
     apiFetch("/api/auth/me")
       .then((r) => {
@@ -81,6 +88,12 @@ export function LoginForm() {
       <p className="mt-1.5 text-sm text-ink-soft">
         Sign in to your Meridian account.
       </p>
+
+      {demoMode && (
+        <p className="mt-4 rounded-xl border border-brand/15 bg-brand-soft px-3.5 py-3 text-xs leading-5 text-brand">
+          Demo mode is ready. Open the sample account with one click; all balances and activity are fictional.
+        </p>
+      )}
 
       <form onSubmit={submit} className="mt-7 space-y-4">
         <Field label="Email">
