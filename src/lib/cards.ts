@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { accounts, cards, cardActivity, notifications, transactions } from "@/db/schema";
 import { HttpError, str } from "./api";
 import { accountAccess, lockedActiveUser, type DBTransaction } from "./banking-server";
-import { parseAmount, type CardDTO, type CardActivityDTO } from "./banking";
+import { CARD_NETWORKS, parseAmount, type CardDTO, type CardActivityDTO } from "./banking";
 import { hashPassword, verifyPassword } from "./password";
 import type { SessionUser } from "./auth";
 
@@ -26,7 +26,7 @@ export async function listCards(userId: number): Promise<CardDTO[]> {
   const rows = await db.select({ card: cards, accountName: accounts.name, currency: accounts.currency }).from(cards)
     .innerJoin(accounts, eq(cards.accountId, accounts.id)).where(eq(cards.userId, userId)).orderBy(asc(cards.createdAt), asc(cards.id));
   return Promise.all(rows.map(async ({ card: c, accountName, currency }) => ({
-    id: c.id, accountId: c.accountId, accountName, currency, kind: c.kind, name: c.name,
+    id: c.id, accountId: c.accountId, accountName, currency, kind: c.kind, network: c.network as CardDTO["network"], name: c.name,
     holderName: c.holderName, last4: c.last4, expiryMonth: c.expiryMonth, expiryYear: c.expiryYear, status: c.status,
     onlineEnabled: c.onlineEnabled, internationalEnabled: c.internationalEnabled, atmEnabled: c.atmEnabled,
     dailyLimitCents: c.dailyLimitCents, monthlyLimitCents: c.monthlyLimitCents, ...await usage(c.id),
@@ -47,6 +47,8 @@ function notification(tx: DBTransaction, userId: number, title: string, body: st
 export async function issueCard(user: SessionUser, body: Record<string, unknown>) {
   if (body.kind !== "virtual" && body.kind !== "physical") throw new HttpError(400, "Choose a virtual or physical card.");
   const kind = body.kind;
+  const network = body.network === undefined ? "visa" : body.network;
+  if (typeof network !== "string" || !CARD_NETWORKS.includes(network as (typeof CARD_NETWORKS)[number])) throw new HttpError(400, "Choose a card network.");
   const name = str(body.name, 2, 40);
   if (!name) throw new HttpError(400, "Give your card a name (2–40 characters).");
   const accountId = Number(body.accountId);
@@ -62,7 +64,7 @@ export async function issueCard(user: SessionUser, body: Record<string, unknown>
     if (active.length >= 8) throw new HttpError(400, "You can have up to 8 live demo cards.");
     const number = demoCardNumber();
     const now = new Date();
-    const [card] = await tx.insert(cards).values({ userId: user.id, accountId, kind, name, holderName: user.name, demoNumber: number, last4: number.slice(-4), expiryMonth: now.getUTCMonth() + 1, expiryYear: now.getUTCFullYear() + 3, status: kind === "virtual" ? "active" : "awaiting_activation", deliveryAddress: address }).returning({ id: cards.id });
+    const [card] = await tx.insert(cards).values({ userId: user.id, accountId, kind, network, name, holderName: user.name, demoNumber: number, last4: number.slice(-4), expiryMonth: now.getUTCMonth() + 1, expiryYear: now.getUTCFullYear() + 3, status: kind === "virtual" ? "active" : "awaiting_activation", deliveryAddress: address }).returning({ id: cards.id });
     await notification(tx, user.id, kind === "virtual" ? "Virtual card created" : "Physical card requested", `${name} ending ${number.slice(-4)} is ${kind === "virtual" ? "ready to test" : "awaiting simulated delivery"}. Registered with payment processing gateway.`);
     return card;
   });
@@ -167,7 +169,7 @@ export async function cardAction(user: SessionUser, id: number, action: string, 
     const now = new Date();
     await tx.update(cards).set({ status: "replaced", replacementReason: String(body.reason), appleWalletDemo: false, googleWalletDemo: false }).where(eq(cards.id, id));
     const [replacement] = await tx.insert(cards).values({
-      userId: user.id, accountId: card.accountId, kind: card.kind, name: card.name, holderName: owner.name,
+      userId: user.id, accountId: card.accountId, kind: card.kind, network: card.network, name: card.name, holderName: owner.name,
       demoNumber: number, last4: number.slice(-4), expiryMonth: now.getUTCMonth() + 1, expiryYear: now.getUTCFullYear() + 3,
       status: card.kind === "virtual" ? "active" : "awaiting_activation", deliveryAddress: card.deliveryAddress,
       dailyLimitCents: card.dailyLimitCents, monthlyLimitCents: card.monthlyLimitCents,

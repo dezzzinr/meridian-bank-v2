@@ -13,5 +13,11 @@ export function CategoryPill({ category }: { category: string }) {
   return <span className={`${BASE} ${categoryStyle(category)}`}>{category}</span>;
 }
 export function TypeBadge({ type }: { type: AccountType }) {
-  return <span className={`${BASE} ${type === "fixed_deposit" ? "bg-amber-soft text-amber" : type === "foreign_currency" ? "bg-[#e8eef7] text-[#31517a]" : type === "joint" ? "bg-[#f3e8f2] text-[#7a3a68]" : "bg-brand-soft text-brand-deep"}`}>{ACCOUNT_LABELS[type]}</span>;
+  const tone = ["fixed_deposit", "money_market"].includes(type) ? "bg-amber-soft text-amber"
+    : type === "foreign_currency" ? "bg-[#e8eef7] text-[#31517a]"
+    : type === "joint" ? "bg-[#f3e8f2] text-[#7a3a68]"
+    : ["business_checking", "business_savings", "merchant", "corporate"].includes(type) ? "bg-[#e8eef7] text-[#31517a]"
+    : ["trust", "escrow", "retirement"].includes(type) ? "bg-brand-soft text-brand-deep"
+    : "bg-brand-soft text-brand-deep";
+  return <span className={`${BASE} ${tone}`}>{ACCOUNT_LABELS[type]}</span>;
 }

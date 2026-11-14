@@ -168,6 +168,7 @@ export const cards = pgTable("cards", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   accountId: integer("account_id").notNull().references(() => accounts.id, { onDelete: "cascade" }),
+    network: text("network").notNull().default("visa"),
   kind: text("kind", { enum: ["virtual", "physical"] }).notNull(),
   name: text("name").notNull(),
   holderName: text("holder_name").notNull(),

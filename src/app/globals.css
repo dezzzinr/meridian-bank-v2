@@ -6,24 +6,24 @@
   --font-display: var(--font-grotesk), "Space Grotesk", var(--font-manrope),
     ui-sans-serif, sans-serif;
 
-  --color-paper: #f4f3ee;
-  --color-card: #fdfdfb;
-  --color-ink: #1c221f;
-  --color-ink-soft: #5b655f;
-  --color-ink-faint: #8b948d;
-  --color-line: #e4e1d6;
-  --color-line-soft: #edeadf;
-  --color-brand: #0f5a48;
-  --color-brand-deep: #0a4033;
-  --color-brand-soft: #e2eee8;
-  --color-night: #0c1411;
-  --color-night-2: #15221c;
-  --color-amber: #91600a;
-  --color-amber-soft: #f7edd4;
-  --color-rose: #b02a3c;
-  --color-rose-soft: #f9e8eb;
-  --color-good: #1f7a4d;
-  --color-good-soft: #e3f1e8;
+  --color-paper: #f3f6f2;
+  --color-card: #ffffff;
+  --color-ink: #17231d;
+  --color-ink-soft: #4f6057;
+  --color-ink-faint: #687970;
+  --color-line: #dce5de;
+  --color-line-soft: #e9efea;
+  --color-brand: #17664f;
+  --color-brand-deep: #104a39;
+  --color-brand-soft: #e2f1e9;
+  --color-night: #102019;
+  --color-night-2: #1a352a;
+  --color-amber: #835500;
+  --color-amber-soft: #fff2d3;
+  --color-rose: #ad263c;
+  --color-rose-soft: #fff0f2;
+  --color-good: #176c43;
+  --color-good-soft: #e6f4eb;
 
   --shadow-card: 0 1px 2px rgb(24 28 26 / 0.04),
     0 4px 16px -8px rgb(24 28 26 / 0.08);
@@ -40,13 +40,13 @@
     @apply rounded-xl border border-line bg-card shadow-card;
   }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-deep active:scale-[0.98] disabled:pointer-events-none disabled:opacity-55;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-deep active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:pointer-events-none disabled:opacity-55;
   }
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-card px-4 py-2.5 text-sm font-semibold text-ink transition hover:bg-paper active:scale-[0.98] disabled:pointer-events-none disabled:opacity-55;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-card px-4 py-2.5 text-sm font-semibold text-ink transition hover:border-brand/35 hover:bg-brand-soft/40 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:pointer-events-none disabled:opacity-55;
   }
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-rose px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8f2131] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-55;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-rose px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#8f2131] active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose disabled:pointer-events-none disabled:opacity-55;
   }
 }
 

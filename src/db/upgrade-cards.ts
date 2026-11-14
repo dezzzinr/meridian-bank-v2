@@ -46,6 +46,7 @@ export async function applyCardsUpgrade(tx: DBTransaction) {
     );
     CREATE INDEX IF NOT EXISTS cards_user_idx ON public.cards(user_id);
     CREATE INDEX IF NOT EXISTS cards_account_idx ON public.cards(account_id);
+    ALTER TABLE public.cards ADD COLUMN IF NOT EXISTS network text NOT NULL DEFAULT 'visa';
     ALTER TABLE public.transactions ADD COLUMN IF NOT EXISTS card_id integer REFERENCES public.cards(id) ON DELETE SET NULL;
 
     CREATE TABLE IF NOT EXISTS public.card_activity (

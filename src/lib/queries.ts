@@ -134,7 +134,7 @@ export async function dashboard(userId: number): Promise<DashboardData> {
   const pendingCents = pending.reduce((s, t) => s + t.amountCents, 0);
   const availableCents = acctList.filter((a) => !isTermLocked(a)).reduce((s, a) => s + inBase(a.balanceCents, a.currency), 0);
   const totalCents = acctList.reduce((s, a) => s + inBase(a.balanceCents, a.currency), 0);
-  const savingsCents = acctList.filter((a) => ["savings", "fixed_deposit"].includes(a.type)).reduce((s, a) => s + inBase(a.balanceCents, a.currency), 0);
+  const savingsCents = acctList.filter((a) => ["savings", "fixed_deposit", "money_market", "business_savings", "retirement"].includes(a.type)).reduce((s, a) => s + inBase(a.balanceCents, a.currency), 0);
   const weeks = Array.from({ length: 8 }, (_, index) => {
     const start = new Date(now.getTime() - (8 - index) * 7 * DAY);
     const end = new Date(start.getTime() + 7 * DAY);

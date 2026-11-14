@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { apiJson } from "@/lib/client";
 import { money } from "@/lib/format";
-import type { CardDTO } from "@/lib/banking";
+import { CARD_NETWORKS, type CardDTO } from "@/lib/banking";
 import type { AccountDTO } from "@/lib/queries";
 import { Modal } from "../ui/Modal";
 import { Field, Input, Select } from "../ui/Field";
@@ -19,6 +19,7 @@ export function CardDialogs({ mode, card, accounts, onClose, onDone, onReveal, w
 }) {
   const toast = useToast();
   const [kind, setKind] = useState("virtual");
+  const [network, setNetwork] = useState<(typeof CARD_NETWORKS)[number]>("visa");
   const [name, setName] = useState("");
   const [accountId, setAccountId] = useState("");
   const [address, setAddress] = useState("");
@@ -40,7 +41,7 @@ export function CardDialogs({ mode, card, accounts, onClose, onDone, onReveal, w
   const eligible = accounts.filter((a) => !a.closedAt && a.type !== "fixed_deposit");
   useEffect(() => {
     if (!mode) return;
-    setKind("virtual"); setName(""); setAccountId(eligible[0] ? String(eligible[0].id) : "");
+    setKind("virtual"); setNetwork("visa"); setName(""); setAccountId(eligible[0] ? String(eligible[0].id) : "");
     setAddress(""); setPassword(""); setPin(""); setConfirmPin(""); setReason("damaged"); setProvider(walletProvider); setLast4("");
     setDaily(String((card?.dailyLimitCents ?? 100000) / 100)); setMonthly(String((card?.monthlyLimitCents ?? 500000) / 100));
     setMerchant(""); setAmount(""); setChannel("online"); setInternational(false); setError(""); setOutcome(null);
@@ -55,7 +56,7 @@ export function CardDialogs({ mode, card, accounts, onClose, onDone, onReveal, w
     setBusy(true);
     try {
       if (mode === "issue") {
-        const result = await apiJson<{ id: number }>("/api/cards", { method: "POST", body: JSON.stringify({ kind, name, accountId: Number(accountId), deliveryAddress: address }) });
+        const result = await apiJson<{ id: number }>("/api/cards", { method: "POST", body: JSON.stringify({ kind, network, name, accountId: Number(accountId), deliveryAddress: address }) });
         toast("success", kind === "virtual" ? "Your virtual card is ready." : "Physical card requested. Express processing initiated."); onDone(result.id); onClose();
       } else if (card) {
         if (mode === "limits") {
@@ -78,6 +79,7 @@ export function CardDialogs({ mode, card, accounts, onClose, onDone, onReveal, w
     <form onSubmit={submit} className="space-y-4">
       {mode === "issue" && <>
         <div className="grid grid-cols-2 gap-3">{["virtual", "physical"].map((value) => <button type="button" key={value} onClick={() => setKind(value)} className={`relative rounded-xl border p-4 text-left ${kind === value ? "border-brand bg-brand-soft/50" : "border-line hover:bg-paper"}`}><BankIcon name="card" size={23} className="mb-3 text-brand" />{kind === value && <IconCheck size={15} className="absolute right-3 top-3 text-brand" />}<p className="text-sm font-semibold capitalize">{value} card</p><p className="mt-1 text-xs text-ink-soft">{value === "virtual" ? "Instantly ready for testing" : "Simulated delivery & activation"}</p></button>)}</div>
+        <Field label="Card network" hint="Demo network preference only; no real network card is issued."><Select aria-label="Card network" value={network} onChange={(e) => setNetwork(e.target.value as (typeof CARD_NETWORKS)[number])}>{CARD_NETWORKS.map((value) => <option key={value} value={value}>{value === "american_express" ? "American Express" : value === "unionpay" ? "UnionPay" : value[0].toUpperCase() + value.slice(1)}</option>)}</Select></Field>
         <Field label="Card nickname"><Input aria-label="Card nickname" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Everyday card" minLength={2} maxLength={40} required /></Field>
         <Field label="Linked account"><Select aria-label="Linked card account" value={accountId} onChange={(e) => setAccountId(e.target.value)} required><option value="" disabled>Choose an account</option>{eligible.map((a) => <option key={a.id} value={a.id}>{a.name} · {a.currency} · {money(a.balanceCents, a.currency)}</option>)}</Select>{!eligible.length && <p className="mt-2 text-xs text-amber">Open a non-fixed-deposit account first.</p>}</Field>
         {kind === "physical" && <Field label="Delivery address" hint="Enter your residential or office mailing address."><textarea aria-label="Delivery address" className="input min-h-20" required minLength={12} maxLength={300} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street, city, postal code, country" /></Field>}

@@ -18,6 +18,7 @@ import {
   IconWallet,
 } from "@/components/icons";
 import { BankIcon } from "@/components/banking/BankIcon";
+import { ACCOUNT_TYPES, ACCOUNT_LABELS } from "@/lib/banking";
 
 export function AdminUserControlModal({
   userId,
@@ -750,10 +751,7 @@ export function AdminUserControlModal({
                       onChange={(e) => setNewAccType(e.target.value)}
                       className="text-xs"
                     >
-                      <option value="checking">Checking</option>
-                      <option value="savings">Savings</option>
-                      <option value="foreign_currency">Foreign Currency</option>
-                      <option value="fixed_deposit">Fixed Deposit</option>
+                      {ACCOUNT_TYPES.map((type) => <option key={type} value={type}>{ACCOUNT_LABELS[type]}</option>)}
                     </Select>
                   </Field>
 

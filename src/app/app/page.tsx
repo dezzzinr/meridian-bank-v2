@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/client";
 import { useCurrentUser } from "@/components/CurrencyContext";
 import { categoryStyle, dayLabel, greeting } from "@/lib/format";
@@ -18,6 +19,7 @@ import {
   IconEyeOff,
   IconInfo,
   IconPlus,
+  IconSpinner,
   IconSend,
   IconShield,
   IconSwap,
@@ -214,6 +216,9 @@ function ExchangeRates({ rates }: { rates: Rates | null }) {
 /* ---- Main Dashboard ---- */
 export default function DashboardPage() {
   const { user, money, moneySigned } = useCurrentUser();
+  const router = useRouter();
+  const [navigationPending, startNavigation] = useTransition();
+  const [pendingAction, setPendingAction] = useState("");
   const [data, setData] = useState<DashboardData | null>(null);
   const [rates, setRates] = useState<Rates | null>(null);
   const [notifications, setNotifications] = useState<
@@ -305,7 +310,7 @@ export default function DashboardPage() {
         <>
           {/* ---- Balance Cards ---- */}
           <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-            <div className="rounded-xl bg-night p-5 text-white shadow-card">
+            <div className="col-span-2 rounded-xl bg-night p-5 text-white shadow-card sm:p-6 xl:col-span-1">
               <div className="flex items-center justify-between">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-100/50">
                   Total balance
@@ -324,6 +329,12 @@ export default function DashboardPage() {
               <p className="mt-1.5 text-xs text-emerald-100/45">
                 {data.accounts.length} account{data.accounts.length === 1 ? "" : "s"}
               </p>
+              {data.accounts[0] && <div className="mt-4 min-w-0 border-t border-white/10 pt-3">
+                <p className="truncate text-[10px] font-medium text-emerald-100/55">Default account · {data.accounts[0].name}</p>
+                <p className="break-all font-mono text-[11px] tracking-wide text-white/90">
+                  {hidden ? `•••• ${data.accounts[0].last4}` : data.accounts[0].accountNumber}
+                </p>
+              </div>}
             </div>
             <div className="card p-5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
@@ -411,19 +422,33 @@ export default function DashboardPage() {
             {/* Quick actions */}
             <div className="card p-5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Quick actions</p>
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <Link href="/app/payments" className="flex items-center gap-2 rounded-lg border border-line bg-paper px-3 py-2.5 text-sm font-semibold text-ink transition hover:border-brand hover:text-brand-deep">
-                  <IconSwap size={15} /> Transfer
-                </Link>
-                <Link href="/app/accounts" className="flex items-center gap-2 rounded-lg border border-line bg-paper px-3 py-2.5 text-sm font-semibold text-ink transition hover:border-brand hover:text-brand-deep">
-                  <IconPlus size={15} /> Deposit
-                </Link>
-                <Link href="/app/payments" className="flex items-center gap-2 rounded-lg border border-line bg-paper px-3 py-2.5 text-sm font-semibold text-ink transition hover:border-brand hover:text-brand-deep">
-                  <IconSend size={15} /> Pay bill
-                </Link>
-                <Link href="/app/activity" className="flex items-center gap-2 rounded-lg border border-line bg-paper px-3 py-2.5 text-sm font-semibold text-ink transition hover:border-brand hover:text-brand-deep">
-                  <IconArrowUpRight size={15} /> Withdraw
-                </Link>
+              <div className="mt-3 grid grid-cols-2 gap-2.5">
+                {[
+                  { label: "Transfer", hint: "Between accounts", href: "/app/payments", Icon: IconSwap },
+                  { label: "Accounts", hint: "Manage your accounts", href: "/app/accounts", Icon: IconPlus },
+                  { label: "Pay a bill", hint: "Manage payments", href: "/app/payments", Icon: IconSend },
+                  { label: "Activity", hint: "Review spending", href: "/app/activity", Icon: IconArrowUpRight },
+                ].map(({ label, hint, href, Icon }) => (
+                  <button
+                    key={label}
+                    type="button"
+                    disabled={navigationPending}
+                    onClick={() => {
+                      setPendingAction(label);
+                      startNavigation(() => router.push(href));
+                    }}
+                    className="group flex min-h-[74px] items-center gap-2.5 rounded-xl border border-line bg-paper p-3 text-left transition hover:border-brand/50 hover:bg-brand-soft/30 active:scale-[.98] disabled:opacity-65"
+                    aria-busy={navigationPending && pendingAction === label}
+                  >
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-brand shadow-sm">
+                      {navigationPending && pendingAction === label ? <IconSpinner size={16} /> : <Icon size={16} />}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-xs font-bold text-ink">{label}</span>
+                      <span className="mt-0.5 block truncate text-[10px] text-ink-faint">{navigationPending && pendingAction === label ? "Opening…" : hint}</span>
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
           </div>

@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { accounts, notifications, users } from "@/db/schema";
 import { apiError, readBody, requireAdmin, str } from "@/lib/api";
 import { positiveId } from "@/lib/banking-server";
-import { ACCOUNT_TYPES, type AccountType, parseAmount } from "@/lib/banking";
+import { ACCOUNT_TYPES, TERM_RATES, termMaturity, type AccountType, parseAmount } from "@/lib/banking";
 import { generateAccountNumber } from "@/lib/ids";
 import { hashPassword } from "@/lib/password";
 
@@ -34,6 +34,9 @@ export async function POST(req: Request) {
       accountNumber: number,
       last4: number.slice(-4),
       balanceCents: amountCents,
+      termMonths: type === "fixed_deposit" ? 6 : null,
+      interestRateBps: type === "fixed_deposit" ? TERM_RATES[6] : null,
+      maturityAt: type === "fixed_deposit" ? termMaturity(6) : null,
     }).returning();
 
     await db.insert(notifications).values({
