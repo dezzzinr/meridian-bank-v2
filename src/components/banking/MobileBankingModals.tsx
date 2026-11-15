@@ -2,15 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { apiJson } from "@/lib/client";
+import Link from "next/link";
 import { useCurrentUser } from "../CurrencyContext";
 import { useToast } from "../ui/Toast";
 import { Modal } from "../ui/Modal";
 import { Field, Input, Select } from "../ui/Field";
-import { IconQrCode, IconSmartphone, IconSend, IconCheck, IconSpinner, IconWallet } from "../icons";
+import { IconQrCode, IconSmartphone, IconSend, IconCheck, IconSpinner, IconWallet, IconArrowDownLeft, IconFileText, IconDots } from "../icons";
 import { money } from "@/lib/format";
 import type { AccountDTO } from "@/lib/queries";
 
-export function MobileBankingModals({ accounts }: { accounts: AccountDTO[] }) {
+export function MobileBankingModals({ accounts, compact = false }: { accounts: AccountDTO[]; compact?: boolean }) {
   const { user } = useCurrentUser();
   const toast = useToast();
 
@@ -110,8 +111,23 @@ export function MobileBankingModals({ accounts }: { accounts: AccountDTO[] }) {
 
   return (
     <>
-      {/* Mobile Banking Action Hub Bar */}
-      <div className="card p-4 bg-gradient-to-r from-card to-paper/80 border-line">
+      {compact ? <nav aria-label="Quick actions" className="grid grid-cols-5 gap-1.5">
+        <Link href="/app/payments" className="flex flex-col items-center gap-2 rounded-xl px-1 py-2 text-center transition hover:bg-brand-soft/50">
+          <span className="grid h-12 w-12 place-items-center rounded-full bg-[#e2f5ea] text-brand"><IconSend size={19}/></span><span className="text-[10px] font-semibold text-ink">Send</span>
+        </Link>
+        <button type="button" disabled={busy || !eligible.length} onClick={handleGenerateQr} className="flex flex-col items-center gap-2 rounded-xl px-1 py-2 text-center transition hover:bg-brand-soft/50 disabled:opacity-50">
+          <span className="grid h-12 w-12 place-items-center rounded-full bg-[#e2f5ea] text-brand"><IconArrowDownLeft size={20}/></span><span className="text-[10px] font-semibold text-ink">Receive</span>
+        </button>
+        <Link href="/app/payments" className="flex flex-col items-center gap-2 rounded-xl px-1 py-2 text-center transition hover:bg-brand-soft/50">
+          <span className="grid h-12 w-12 place-items-center rounded-full bg-[#e2f5ea] text-brand"><IconFileText size={19}/></span><span className="text-[10px] font-semibold text-ink">Pay bills</span>
+        </Link>
+        <button type="button" onClick={() => { setError(""); setActiveModal("mobile_money"); }} className="flex flex-col items-center gap-2 rounded-xl px-1 py-2 text-center transition hover:bg-brand-soft/50">
+          <span className="grid h-12 w-12 place-items-center rounded-full bg-[#e2f5ea] text-brand"><IconSmartphone size={19}/></span><span className="text-[10px] font-semibold text-ink">Top up</span>
+        </button>
+        <button type="button" onClick={() => { setError(""); setActiveModal("qr_scan"); }} className="flex flex-col items-center gap-2 rounded-xl px-1 py-2 text-center transition hover:bg-brand-soft/50">
+          <span className="grid h-12 w-12 place-items-center rounded-full bg-[#e2f5ea] text-brand"><IconDots size={19}/></span><span className="text-[10px] font-semibold text-ink">More</span>
+        </button>
+      </nav> : <div className="card border-line bg-gradient-to-r from-card to-paper/80 p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-white shadow-sm">
@@ -151,7 +167,7 @@ export function MobileBankingModals({ accounts }: { accounts: AccountDTO[] }) {
             </button>
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* 1. Modal: Show My Account QR */}
       <Modal

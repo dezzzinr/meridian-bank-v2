@@ -47,11 +47,11 @@ const NAV = [
   { href: "/app/profile", label: "Profile", icon: IconUser },
 ];
 
-function Brand() {
+function Brand({ light = false }: { light?: boolean }) {
   return (
     <div className="flex items-center gap-2.5">
       <LogoMark size={30} />
-      <span className="font-display text-lg font-semibold tracking-tight text-white">
+      <span className={`font-display text-lg font-semibold tracking-tight ${light ? "text-brand-deep" : "text-white"}`}>
         Meridian
       </span>
     </div>
@@ -193,20 +193,20 @@ export function AppShell({
         </aside>
 
         {/* Mobile top bar */}
-        <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between bg-night px-4 lg:hidden">
+        <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-line-soft bg-white px-4 shadow-sm lg:hidden">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setDrawer(true)}
-              className="rounded-lg p-2 text-emerald-100/70 transition hover:bg-white/10 hover:text-white"
+              className="rounded-lg p-2 text-ink-soft transition hover:bg-brand-soft hover:text-brand-deep"
               aria-label="Open menu"
             >
               <IconMenu size={20} />
             </button>
-            <Brand />
+            <Brand light />
           </div>
           <div className="flex items-center gap-1">
-            <span className="hidden sm:inline-flex"><LanguageSwitcher/></span>
-            <NotificationBell dark />
+            <span className="hidden sm:inline-flex"><LanguageSwitcher variant="light"/></span>
+            <NotificationBell />
             <div className="ml-1">
               <Avatar name={user.name} size="sm" avatarUrl={user.avatarUrl} />
             </div>
@@ -251,7 +251,7 @@ export function AppShell({
             <NotificationBell />
           </div>
 
-          <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
+          <div className="mx-auto w-full max-w-6xl px-4 pb-24 pt-6 sm:px-6 sm:pb-6 lg:py-8">
             {user.status === "suspended" && (
               <div className="mb-5 flex items-start gap-3 rounded-xl border border-amber/30 bg-amber-soft px-4 py-3 text-amber">
                 <IconAlert size={18} className="mt-0.5 shrink-0" />
@@ -267,6 +267,22 @@ export function AppShell({
             {children}
           </div>
         </main>
+
+        <nav aria-label="Primary mobile navigation" className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-line-soft bg-white/95 px-2 pt-2 pb-[max(.55rem,env(safe-area-inset-bottom))] shadow-[0_-4px_20px_rgba(16,32,25,.06)] backdrop-blur lg:hidden">
+          {[
+            { href: "/app", label: "Home", icon: IconHome },
+            { href: "/app/accounts", label: "Accounts", icon: IconWallet },
+            { href: "/app/cards", label: "Cards", icon: CardNavIcon },
+            { href: "/app/activity", label: "Activity", icon: IconSwap },
+            { href: "/app/profile", label: "Profile", icon: IconUser },
+          ].map(({ href, label, icon: Icon }) => {
+            const active = href === "/app" ? pathname === "/app" : pathname.startsWith(href);
+            return <a key={href} href={href} aria-current={active ? "page" : undefined} className={`flex min-w-0 flex-col items-center gap-1 rounded-xl py-1 text-[10px] font-semibold transition ${active ? "text-brand" : "text-ink-faint hover:text-ink"}`}>
+              <span className={`grid h-7 w-10 place-items-center rounded-full ${active ? "bg-brand-soft" : ""}`}><Icon size={19}/></span>
+              <span className="truncate">{label}</span>
+            </a>;
+          })}
+        </nav>
       </div>
     </ToastProvider>
   );

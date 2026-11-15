@@ -36,6 +36,7 @@ interface DashboardData {
   availableCents: number;
   income30: number;
   spend30: number;
+  transactions30: number;
   pendingCount: number;
   pendingCents: number;
   weeks: { label: string; cents: number }[];
@@ -213,6 +214,57 @@ function ExchangeRates({ rates }: { rates: Rates | null }) {
   );
 }
 
+function MobileDashboard({ data, hidden, onToggleBalance }: { data: DashboardData; hidden: boolean; onToggleBalance: () => void }) {
+  const { money, moneySigned } = useCurrentUser();
+  const maxWeek = Math.max(...data.weeks.map((week) => week.cents), 1);
+  return <div className="space-y-5 sm:hidden">
+    <section className="relative isolate overflow-hidden rounded-[24px] bg-gradient-to-br from-[#078447] via-[#12a755] to-[#34c96b] p-5 text-white shadow-[0_16px_35px_-20px_rgba(5,111,62,.7)]">
+      <div aria-hidden className="pointer-events-none absolute -right-10 -top-12 -z-10 h-44 w-44 rounded-full border-[28px] border-white/[.07]" />
+      <div aria-hidden className="pointer-events-none absolute right-[-22px] bottom-[-72px] -z-10 h-44 w-44 rounded-full bg-[#a5f5b7]/15 blur-2xl" />
+      <div className="flex items-center justify-between">
+        <div><p className="text-[11px] font-semibold tracking-wide text-white/70">Total balance</p><p className="mt-1 text-[10px] text-white/60">Across {data.accounts.length} account{data.accounts.length === 1 ? "" : "s"}</p></div>
+        <button type="button" onClick={onToggleBalance} aria-label={hidden ? "Show balance" : "Hide balance"} className="rounded-full bg-white/15 p-2 text-white transition hover:bg-white/25">{hidden ? <IconEyeOff size={16}/> : <IconEye size={16}/>}</button>
+      </div>
+      <div className="relative z-10 mt-2 max-w-[72%]">
+        <p className="font-display text-[32px] font-semibold leading-tight tracking-[-.04em]">{hidden ? "••••••••" : money(data.totalCents)}</p>
+        <p className="mt-1 text-[10px] font-medium text-white/65">{data.baseCurrency} · available balance {hidden ? "••••" : money(data.availableCents)}</p>
+      </div>
+      <div aria-hidden className="absolute bottom-5 right-4 h-[78px] w-[118px] rotate-[-9deg] rounded-xl border border-white/25 bg-gradient-to-br from-white/30 to-[#064b38]/30 p-3 shadow-lg backdrop-blur-sm">
+        <div className="flex items-center justify-between"><span className="h-4 w-5 rounded-[4px] border border-white/50 bg-[#f5df8d]/80"/><span className="text-[7px] font-bold tracking-[.12em] text-white/75">MERIDIAN</span></div>
+        <div className="mt-4 flex items-end justify-between"><span className="font-mono text-[8px] tracking-[.15em] text-white/80">•••• {data.accounts[0]?.last4 ?? "••••"}</span><span className="text-[8px] font-black italic text-white/85">CARD</span></div>
+      </div>
+      <div className="relative z-10 mt-5 flex items-center gap-2 border-t border-white/20 pt-3">
+        <span className="h-1.5 w-1.5 rounded-full bg-[#c7ffd4]"/><p className="truncate text-[10px] font-medium text-white/75">{data.accounts[0]?.name ?? "Your accounts"}</p><span className="ml-auto text-[10px] font-semibold text-white/70">•••• {data.accounts[0]?.last4 ?? "—"}</span>
+      </div>
+    </section>
+
+    <MobileBankingModals accounts={data.accounts} compact />
+
+    <section aria-labelledby="mobile-overview-title">
+      <div className="mb-3 flex items-end justify-between"><div><h2 id="mobile-overview-title" className="font-display text-[17px] font-semibold tracking-tight text-ink">Quick overview</h2><p className="mt-0.5 text-[10px] text-ink-faint">This month</p></div><Link href="/app/activity" className="text-[10px] font-bold text-brand">Details</Link></div>
+      <div className="grid grid-cols-2 gap-3">
+        <article className="rounded-2xl border border-line-soft bg-white p-4 shadow-[0_4px_18px_-12px_rgba(18,56,38,.16)]"><div className="flex items-center gap-2"><span className="grid h-7 w-7 place-items-center rounded-full bg-[#e4f6eb] text-[#159354]"><IconArrowDownLeft size={15}/></span><h3 className="text-[11px] font-medium text-ink-soft">Income</h3></div><p className="mt-3 truncate font-display text-[19px] font-semibold tracking-tight text-ink">{hidden ? "••••••" : money(data.income30)}</p><p className="mt-1 text-[9px] text-ink-faint">Last 30 days</p></article>
+        <article className="rounded-2xl border border-line-soft bg-white p-4 shadow-[0_4px_18px_-12px_rgba(18,56,38,.16)]"><div className="flex items-center gap-2"><span className="grid h-7 w-7 place-items-center rounded-full bg-[#fff0e8] text-[#db7942]"><IconArrowUpRight size={15}/></span><h3 className="text-[11px] font-medium text-ink-soft">Expenses</h3></div><p className="mt-3 truncate font-display text-[19px] font-semibold tracking-tight text-ink">{hidden ? "••••••" : money(data.spend30)}</p><p className="mt-1 text-[9px] text-ink-faint">Last 30 days</p></article>
+        <article className="rounded-2xl border border-line-soft bg-white p-4 shadow-[0_4px_18px_-12px_rgba(18,56,38,.16)]"><div className="flex items-center gap-2"><span className="grid h-7 w-7 place-items-center rounded-full bg-[#edf3ff] text-[#527bd2]"><IconSwap size={15}/></span><h3 className="text-[11px] font-medium text-ink-soft">Transactions</h3></div><p className="mt-3 font-display text-[19px] font-semibold tracking-tight text-ink">{data.transactions30}</p><p className="mt-1 text-[9px] text-ink-faint">Last 30 days</p></article>
+        <article className="rounded-2xl border border-line-soft bg-white p-4 shadow-[0_4px_18px_-12px_rgba(18,56,38,.16)]"><div className="flex items-center gap-2"><span className="grid h-7 w-7 place-items-center rounded-full bg-[#f0eafa] text-[#9065bd]"><IconTrendingUp size={15}/></span><h3 className="text-[11px] font-medium text-ink-soft">Savings</h3></div><p className="mt-3 truncate font-display text-[19px] font-semibold tracking-tight text-ink">{hidden ? "••••••" : money(data.savingsCents)}</p><p className="mt-1 text-[9px] text-ink-faint">Across savings accounts</p></article>
+      </div>
+    </section>
+
+    <section className="overflow-hidden rounded-[22px] bg-[#103f30] p-5 text-white shadow-card">
+      <div className="flex items-start justify-between"><div><p className="text-[10px] font-semibold uppercase tracking-[.15em] text-[#a8e3be]">Spending analysis</p><p className="mt-1 text-[10px] text-white/55">This month</p></div><Link href="/app/activity" aria-label="View spending activity" className="grid h-7 w-7 place-items-center rounded-full bg-white/10 text-white/80"><IconArrowUpRight size={14}/></Link></div>
+      <p className="mt-2 font-display text-[22px] font-semibold tracking-tight">{hidden ? "••••••" : money(data.spend30)}</p>
+      <div className="mt-4 flex h-[94px] items-end gap-2 border-b border-white/10 px-1">{data.weeks.map((week, index) => <div key={`${week.label}-${index}`} title={`${week.label}: ${money(week.cents)}`} className="flex h-full flex-1 items-end"><div className={`w-full rounded-t-md ${index === data.weeks.length - 1 ? "bg-[#b6f1b9]" : "bg-[#4fcb82]/45"}`} style={{ height: `${Math.max(9, Math.round(week.cents / maxWeek * 100))}%` }}/></div>)}</div>
+      <div className="mt-2 flex justify-between text-[9px] text-white/40"><span>{data.weeks[0]?.label}</span><span>{data.weeks[data.weeks.length - 1]?.label}</span></div>
+    </section>
+
+    <section>
+      <div className="mb-3 flex items-center justify-between"><h2 className="font-display text-[17px] font-semibold tracking-tight text-ink">Recent activity</h2><Link href="/app/activity" className="text-[10px] font-bold text-brand">See all</Link></div>
+      <div className="overflow-hidden rounded-2xl border border-line-soft bg-white shadow-[0_4px_18px_-12px_rgba(18,56,38,.16)]">{data.recent.slice(0, 4).map((transaction) => { const inbound = transaction.kind === "credit" || transaction.kind === "transfer_in"; return <Link key={transaction.id} href="/app/activity" className="flex items-center gap-3 border-b border-line-soft px-4 py-3 last:border-0"><span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${inbound ? "bg-[#e4f6eb] text-[#159354]" : "bg-[#f2f4f2] text-ink-soft"}`}>{inbound ? <IconArrowDownLeft size={16}/> : <IconArrowUpRight size={16}/>}</span><span className="min-w-0 flex-1"><span className="block truncate text-xs font-semibold text-ink">{transaction.description}</span><span className="mt-0.5 block truncate text-[9px] text-ink-faint">{dayLabel(transaction.occurredAt)} · {transaction.accountName}</span></span><span className={`font-display text-xs font-semibold ${inbound ? "text-good" : "text-ink"}`}>{moneySigned(transaction.amountCents, inbound ? "in" : "out", transaction.currency)}</span></Link>; })}</div>
+    </section>
+    <Link href="/app/accounts" className="flex items-center justify-between rounded-xl border border-line-soft bg-white px-4 py-3 text-xs font-semibold text-ink"><span>View all {data.accounts.length} accounts</span><IconArrowUpRight size={15} className="text-brand"/></Link>
+  </div>;
+}
+
 /* ---- Main Dashboard ---- */
 export default function DashboardPage() {
   const { user, money, moneySigned } = useCurrentUser();
@@ -263,18 +315,20 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className="mb-7 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 sm:mb-7">
         <div>
           <h1 className="font-display text-2xl font-semibold tracking-tight text-ink sm:text-[28px]">
-            {greeting()}, {firstName}
+            {greeting()}, {firstName}<span className="ml-1 sm:hidden">👋</span>
           </h1>
-          <p className="mt-1 text-sm text-ink-soft">{today}</p>
+          <p className="mt-1 hidden text-sm text-ink-soft sm:block">{today}</p>
+          <p className="mt-1 text-[11px] text-ink-soft sm:hidden">Here’s your account at a glance.</p>
         </div>
-        {data && (
+        {data && <div className={onboarding ? "" : "hidden sm:block"}>
           <DashboardActions accounts={data.accounts} onboarding={onboarding} />
-        )}
+        </div>}
       </div>
 
+      <div className="hidden sm:block">
       {data?.hasForeignCurrency && <p className="mb-4 rounded-xl bg-brand-soft/40 p-3 text-xs text-brand-deep">Overview in {data.baseCurrency} · Foreign-currency totals use live indicative exchange-rate estimates. Account balances and individual transactions remain in their original currency.</p>}
       {loadErr ? (
         <div className="card p-10 text-center">
@@ -310,7 +364,7 @@ export default function DashboardPage() {
         <>
           {/* ---- Balance Cards ---- */}
           <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-            <div className="col-span-2 rounded-xl bg-night p-5 text-white shadow-card sm:p-6 xl:col-span-1">
+            <div className="col-span-2 overflow-hidden rounded-2xl bg-gradient-to-br from-[#0e6849] via-[#168355] to-[#35b96e] p-5 text-white shadow-card sm:p-6 xl:col-span-1">
               <div className="flex items-center justify-between">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-100/50">
                   Total balance
@@ -323,7 +377,7 @@ export default function DashboardPage() {
                   {hidden ? <IconEyeOff size={14} /> : <IconEye size={14} />}
                 </button>
               </div>
-              <p className="mt-3 font-display text-[26px] font-semibold tracking-tight sm:text-3xl">
+              <p className="mt-3 font-display text-[30px] font-semibold tracking-tight sm:text-3xl">
                 {hidden ? "••••••" : money(data.totalCents)}
               </p>
               <p className="mt-1.5 text-xs text-emerald-100/45">
@@ -383,14 +437,9 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ---- Mobile Banking Action Hub ---- */}
-          <div className="mt-4">
-            <MobileBankingModals accounts={data.accounts} />
-          </div>
-
           {/* ---- Income vs Expenses + Spending ---- */}
           <div className="mt-4 grid gap-3 sm:gap-4 lg:grid-cols-2">
-            <div className="card p-5">
+            <div className="card order-2 p-5 lg:order-1">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
                 This month
               </p>
@@ -420,9 +469,9 @@ export default function DashboardPage() {
               </div>
             </div>
             {/* Quick actions */}
-            <div className="card p-5">
+            <div className="card order-1 p-4 sm:p-5 lg:order-2">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Quick actions</p>
-              <div className="mt-3 grid grid-cols-2 gap-2.5">
+              <div className="mt-3 grid grid-cols-4 gap-1.5 sm:gap-2.5">
                 {[
                   { label: "Transfer", hint: "Between accounts", href: "/app/payments", Icon: IconSwap },
                   { label: "Accounts", hint: "Manage your accounts", href: "/app/accounts", Icon: IconPlus },
@@ -437,15 +486,15 @@ export default function DashboardPage() {
                       setPendingAction(label);
                       startNavigation(() => router.push(href));
                     }}
-                    className="group flex min-h-[74px] items-center gap-2.5 rounded-xl border border-line bg-paper p-3 text-left transition hover:border-brand/50 hover:bg-brand-soft/30 active:scale-[.98] disabled:opacity-65"
+                    className="group flex min-h-[76px] min-w-0 flex-col items-center justify-center gap-1.5 rounded-xl border border-line bg-paper px-1.5 py-2 text-center transition hover:border-brand/50 hover:bg-brand-soft/30 active:scale-[.98] disabled:opacity-65 sm:flex-row sm:gap-2.5 sm:p-3 sm:text-left"
                     aria-busy={navigationPending && pendingAction === label}
                   >
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-brand shadow-sm">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-soft text-brand sm:rounded-lg sm:bg-white sm:shadow-sm">
                       {navigationPending && pendingAction === label ? <IconSpinner size={16} /> : <Icon size={16} />}
                     </span>
                     <span className="min-w-0">
-                      <span className="block text-xs font-bold text-ink">{label}</span>
-                      <span className="mt-0.5 block truncate text-[10px] text-ink-faint">{navigationPending && pendingAction === label ? "Opening…" : hint}</span>
+                      <span className="block truncate text-[10px] font-bold text-ink sm:text-xs">{label}</span>
+                      <span className="mt-0.5 hidden truncate text-[10px] text-ink-faint sm:block">{navigationPending && pendingAction === label ? "Opening…" : hint}</span>
                     </span>
                   </button>
                 ))}
@@ -556,8 +605,21 @@ export default function DashboardPage() {
               )}
             </div>
           </div>
+
+          {/* ---- QR and mobile money tools ---- */}
+          <div className="mt-4">
+            <MobileBankingModals accounts={data.accounts} />
+          </div>
         </>
       )}
+      </div>
+
+      <div className="sm:hidden">
+        {loadErr ? <div className="card p-8 text-center"><p className="text-sm font-semibold text-rose">Couldn’t load your dashboard.</p><button className="btn-outline mt-4" onClick={load}>Try again</button></div>
+          : !data ? <div className="space-y-4"><Skeleton className="h-48 rounded-2xl"/><div className="grid grid-cols-5 gap-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-16 rounded-xl" />)}</div><Skeleton className="h-40 rounded-2xl"/></div>
+          : onboarding ? <div className="rounded-2xl border border-line bg-white p-6"><span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-soft text-brand-deep"><IconWallet size={21}/></span><h2 className="mt-4 font-display text-xl font-semibold text-ink">Let’s set up your first account</h2><p className="mt-2 text-sm leading-relaxed text-ink-soft">Open a current account for everyday spending or a savings account to keep your goals separate.</p></div>
+          : <MobileDashboard data={data} hidden={hidden} onToggleBalance={() => setHidden((value) => !value)} />}
+      </div>
     </div>
   );
 }

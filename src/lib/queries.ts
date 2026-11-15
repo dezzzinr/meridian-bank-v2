@@ -108,6 +108,7 @@ export async function listTransfers(userId: number): Promise<TransferDTO[]> {
 export interface DashboardData {
   accounts: AccountDTO[]; totalCents: number; savingsCents: number; availableCents: number;
   income30: number; spend30: number; pendingCount: number; pendingCents: number;
+  transactions30: number;
   weeks: { label: string; cents: number }[];
   monthly: { label: string; income: number; spend: number }[];
   byCategory: { category: string; cents: number }[];
@@ -150,6 +151,7 @@ export async function dashboard(userId: number): Promise<DashboardData> {
   });
   return {
     accounts: acctList, totalCents, savingsCents, availableCents, income30, spend30,
+    transactions30: txs.filter((t) => t.occurredAt >= since30).length,
     pendingCount: pending.length, pendingCents, weeks, monthly,
     byCategory: [...categoryMap.entries()].sort((a, b) => b[1] - a[1]).map(([category, cents]) => ({ category, cents })),
     recent: await listTransactions(userId, 6), baseCurrency,
