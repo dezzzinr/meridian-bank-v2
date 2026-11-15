@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { initials } from "@/lib/format";
 import { apiFetch, setToken } from "@/lib/client";
 import {
@@ -183,6 +184,9 @@ export function AppShell({
             </p>
             <NavList pathname={pathname} isAdmin={isAdmin} />
           </div>
+          <div className="border-t border-white/10 px-3 py-2.5">
+            <LanguageSwitcher/>
+          </div>
           <div className="border-t border-white/10">
             <UserCard name={user.name} email={user.email} avatarUrl={user.avatarUrl} onLogout={logout} />
           </div>
@@ -201,6 +205,7 @@ export function AppShell({
             <Brand />
           </div>
           <div className="flex items-center gap-1">
+            <span className="hidden sm:inline-flex"><LanguageSwitcher/></span>
             <NotificationBell dark />
             <div className="ml-1">
               <Avatar name={user.name} size="sm" avatarUrl={user.avatarUrl} />

@@ -1,0 +1,138 @@
+{
+  "project": "dezzzinr/meridian-bank-v2",
+  "theme_source": "src/app/globals.css",
+  "fonts": [
+    "Space Grotesk",
+    "Manrope"
+  ],
+  "palette": [
+    "#17664f",
+    "#104a39",
+    "#e2f1e9",
+    "#f4f3ee",
+    "#f3f6f2",
+    "#102019",
+    "#c8e4d1",
+    "#a7d4b5"
+  ],
+  "count": 11,
+  "jpeg_total_kb": 1665,
+  "ratios": {
+    "hero": "2:1",
+    "landing_slots": "1.45:1",
+    "marketing": "4:3",
+    "og": "1.91:1"
+  },
+  "images": [
+    {
+      "file": "public/images/business-loan.jpg",
+      "slot": "/loans/business - hero band + lending tile",
+      "width": 1200,
+      "height": 900,
+      "jpeg_kb": 129,
+      "webp_kb": 64,
+      "avif_kb": 47,
+      "alt": "A bakery owner arranging pastries behind the shop counter"
+    },
+    {
+      "file": "public/images/car-loan.jpg",
+      "slot": "/loans/car - hero band + lending tile",
+      "width": 1200,
+      "height": 900,
+      "jpeg_kb": 221,
+      "webp_kb": 163,
+      "avif_kb": 104,
+      "alt": "A compact car parked on a quiet leafy residential street"
+    },
+    {
+      "file": "public/images/cards-payments.jpg",
+      "slot": "src/app/page.tsx - cards slot, aspect 1.45 (replaces CardsIllustration)",
+      "width": 1450,
+      "height": 1000,
+      "jpeg_kb": 118,
+      "webp_kb": 46,
+      "avif_kb": 35,
+      "alt": "A hand tapping a plain green debit card on a card reader in a cafe"
+    },
+    {
+      "file": "public/images/careers.jpg",
+      "slot": "/careers - hero band",
+      "width": 1200,
+      "height": 900,
+      "jpeg_kb": 106,
+      "webp_kb": 42,
+      "avif_kb": 35,
+      "alt": "Two colleagues talking in a sunlit office corridor"
+    },
+    {
+      "file": "public/images/community.jpg",
+      "slot": "/community - hero band",
+      "width": 1200,
+      "height": 900,
+      "jpeg_kb": 125,
+      "webp_kb": 62,
+      "avif_kb": 48,
+      "alt": "A group of people talking around a table in a bright community hall"
+    },
+    {
+      "file": "public/images/hero-lifestyle.jpg",
+      "slot": "/about - wide page hero band",
+      "width": 2400,
+      "height": 1350,
+      "jpeg_kb": 268,
+      "webp_kb": 117,
+      "avif_kb": 93,
+      "alt": "Woman checking her phone at a sunlit kitchen table"
+    },
+    {
+      "file": "public/images/hero-meridian.jpg",
+      "slot": "src/app/page.tsx - hero section background (fill, priority, CSS scrim)",
+      "width": 2048,
+      "height": 1024,
+      "jpeg_kb": 151,
+      "webp_kb": 58,
+      "avif_kb": 48,
+      "alt": "A cup and a green card on an oak desk against a dark green wall"
+    },
+    {
+      "file": "public/images/insight-overview.jpg",
+      "slot": "src/app/page.tsx - insight slot, aspect 1.45 (replaces InsightIllustration)",
+      "width": 1450,
+      "height": 1000,
+      "jpeg_kb": 129,
+      "webp_kb": 61,
+      "avif_kb": 44,
+      "alt": "Hands holding a phone above a notebook and coffee, reviewing recent activity"
+    },
+    {
+      "file": "public/images/investments.jpg",
+      "slot": "/investment-centres - hero band + lending tile",
+      "width": 1200,
+      "height": 900,
+      "jpeg_kb": 118,
+      "webp_kb": 59,
+      "avif_kb": 41,
+      "alt": "Reading glasses resting on an open notebook beside a plant and a cup"
+    },
+    {
+      "file": "public/images/mortgage-home.jpg",
+      "slot": "/loans/mortgage - hero band + lending tile",
+      "width": 1200,
+      "height": 900,
+      "jpeg_kb": 203,
+      "webp_kb": 130,
+      "avif_kb": 82,
+      "alt": "A Victorian terraced house with a deep green front door"
+    },
+    {
+      "file": "public/images/og-meridian.jpg",
+      "slot": "src/app/layout.tsx - openGraph.images + twitter.images",
+      "width": 1200,
+      "height": 630,
+      "jpeg_kb": 97,
+      "webp_kb": 43,
+      "avif_kb": 32,
+      "alt": "Meridian - a clearer way to bank"
+    }
+  ]
+}

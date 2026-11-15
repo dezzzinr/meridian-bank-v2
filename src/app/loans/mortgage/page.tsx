@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PublicInfoPage } from "@/components/pages/PublicInfoPage";
-import { MortgageIllustration } from "@/components/pages/MortgageIllustration";
+import { PhotoPanel } from "@/components/pages/Photos";
 
 export const metadata: Metadata = {
   title: "Mortgage guide | Meridian",
@@ -23,7 +23,7 @@ export default function MortgagePage() {
       { label: "GOV.UK: Preparing to buy a home", href: "https://www.gov.uk/buying-a-home/preparing-to-buy" },
       { label: "MoneyHelper: Mortgage fees and costs", href: "https://www.moneyhelper.org.uk/en/homes/buying-a-home/estimate-your-overall-buying-and-moving-costs" },
     ]}
-    illustration={<MortgageIllustration />}
+    illustration={<PhotoPanel src="/images/mortgage-home.jpg" alt="A Victorian terraced house with a deep green front door" width={1200} height={900} />}
     action={{ label: "View lending options", href: "/loans" }}
   />;
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ComponentType } from "react";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 import { LogoMark, IconChevronDown, IconBriefcase, IconBuilding, IconCar, IconChart, IconCircleHelp, IconFileText, IconShield, IconSmartphone, IconUsers, IconWallet } from "@/components/icons";
 
 const productLinks = [
@@ -35,9 +36,9 @@ export function PublicHeader() {
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-3.5 sm:px-8">
         <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="Meridian home"><LogoMark size={32}/><span className="font-display text-xl font-semibold tracking-tight">Meridian</span></Link>
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Main navigation"><NavGroup label="Banking" items={productLinks}/><NavGroup label="Discover" items={discoverLinks}/><Link href="/about" className="rounded-lg px-3 py-2 text-sm font-semibold text-white/75 hover:text-white">About</Link><Link href="/help" className="rounded-lg px-3 py-2 text-sm font-semibold text-white/75 hover:text-white">Help</Link></nav>
-        <div className="flex shrink-0 items-center gap-1 sm:gap-3"><Link href="/login" className="rounded-lg px-3 py-2 text-sm font-semibold text-white/80 transition hover:text-white">Log in</Link><Link href="/register" className="inline-flex items-center gap-2 rounded-lg bg-[#c8e4d1] px-4 py-2.5 text-sm font-bold text-[#163d30] transition hover:bg-white">Get started<ArrowIcon className="h-4 w-4"/></Link></div>
+        <div className="flex shrink-0 items-center gap-1 sm:gap-3"><span className="hidden md:inline-flex"><LanguageSwitcher/></span><Link href="/login" className="rounded-lg px-3 py-2 text-sm font-semibold text-white/80 transition hover:text-white">Log in</Link><Link href="/register" className="inline-flex items-center gap-2 rounded-lg bg-[#c8e4d1] px-4 py-2.5 text-sm font-bold text-[#163d30] transition hover:bg-white">Get started<ArrowIcon className="h-4 w-4"/></Link></div>
       </div>
-      <nav className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-5 pb-3 lg:hidden sm:px-8" aria-label="Explore Meridian">{[...productLinks, ...discoverLinks].map(({ label, href, icon: Icon }) => <Link key={label} href={href} className="inline-flex shrink-0 items-center gap-2 rounded-full border border-white/10 px-3 py-2 text-xs font-semibold text-white/75"><Icon size={14}/>{label}</Link>)}</nav>
+      <nav className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-5 pb-3 lg:hidden sm:px-8" aria-label="Explore Meridian">{[...productLinks, ...discoverLinks].map(({ label, href, icon: Icon }) => <Link key={label} href={href} className="inline-flex shrink-0 items-center gap-2 rounded-full border border-white/10 px-3 py-2 text-xs font-semibold text-white/75"><Icon size={14}/>{label}</Link>)}<span className="md:hidden"><LanguageSwitcher/></span></nav>
     </header>
   );
 }

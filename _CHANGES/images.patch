@@ -1,0 +1,241 @@
+diff --git a/src/app/about/page.tsx b/src/app/about/page.tsx
+index f97a8c7..720d493 100644
+--- a/src/app/about/page.tsx
++++ b/src/app/about/page.tsx
+@@ -1,9 +1,11 @@
+ import type { Metadata } from "next";
+ import { PublicInfoPage } from "@/components/pages/PublicInfoPage";
++import { PhotoPanel } from "@/components/pages/Photos";
+ export const metadata: Metadata = { title: "About Meridian" };
+ export default function AboutPage() { return <PublicInfoPage eyebrow="About Meridian" title="Banking should make life feel a little simpler." intro="Meridian is built around a straightforward idea: the tools you use for everyday banking should be clear, useful and easy to find." sections={[
+   { title: "Clarity comes first", body: "A focused dashboard brings accounts, balances and recent activity together, helping you get oriented without the clutter." },
+   { title: "Made for everyday", body: "From checking your balance to setting up a payment, the experience centres on common tasks and clear next steps." },
+   { title: "Designed around you", body: "Choose how you use the app, review your profile and keep key account controls close at hand." },
+   { title: "One connected experience", body: "Accounts, payments, cards, saved payees and account activity are available from a single, consistent workspace." },
+-]} action={{ label: "Explore the app", href: "/register" }} />; }
++]} illustration={<PhotoPanel src="/images/hero-lifestyle.jpg" alt="Woman checking her phone at a sunlit kitchen table" width={1200} height={900} />}
++  action={{ label: "Explore the app", href: "/register" }} />; }
+diff --git a/src/app/careers/page.tsx b/src/app/careers/page.tsx
+index 5fa7070..0d52952 100644
+--- a/src/app/careers/page.tsx
++++ b/src/app/careers/page.tsx
+@@ -1,7 +1,8 @@
+ import type { Metadata } from "next";
+ import Link from "next/link";
+ import { PublicLayout } from "@/components/shell/PublicSite";
++import { HeroPhoto } from "@/components/pages/Photos";
+ import { IconBriefcase, IconChart, IconShield, IconUsers } from "@/components/icons";
+ export const metadata: Metadata = { title: "Careers at Meridian" };
+ const groups: {icon:typeof IconBriefcase; title:string; body:string}[] = [{icon:IconChart,title:"Product & design",body:"Make everyday financial tools easier to understand and use."},{icon:IconShield,title:"Engineering & security",body:"Build dependable experiences and protect the details that matter."},{icon:IconUsers,title:"Customer experience",body:"Help people find answers and make progress with confidence."},{icon:IconBriefcase,title:"Business & operations",body:"Keep teams connected and turn thoughtful plans into useful services."}];
+-export default function CareersPage(){return <PublicLayout><main className="bg-[#f4f3ee]"><section className="bg-night px-5 py-16 text-white sm:px-8 sm:py-24"><div className="mx-auto max-w-6xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#a7d4b5]">Careers at Meridian</p><h1 className="mt-5 max-w-4xl font-display text-5xl font-medium leading-[1.04] tracking-[-.055em] sm:text-6xl">Build banking that works better for people.</h1><p className="mt-6 max-w-2xl text-base leading-7 text-white/60">Bring care, curiosity and craft to the small details that make a big difference in someone’s financial day.</p></div></section><section className="px-5 py-14 sm:px-8 sm:py-20"><div className="mx-auto max-w-6xl"><div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-brand">Where you can make an impact</p><h2 className="mt-4 font-display text-4xl font-medium tracking-[-.04em]">Different perspectives. Shared purpose.</h2></div><div className="mt-9 grid gap-4 sm:grid-cols-2">{groups.map(({icon:I,title,body})=><article key={title} className="flex gap-4 rounded-2xl border border-line bg-card p-6"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand"><I size={21}/></span><div><h3 className="font-display text-xl font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-ink-soft">{body}</p></div></article>)}</div><div id="roles" className="mt-10 rounded-2xl border border-line bg-white p-6 sm:p-8"><p className="text-xs font-bold uppercase tracking-[.18em] text-brand">Open roles</p><h2 className="mt-3 font-display text-2xl font-semibold">Find your next opportunity.</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-ink-soft">Role listings and application details will appear here as opportunities are published. Check back for updates.</p></div></div></section></main></PublicLayout>}
++export default function CareersPage(){return <PublicLayout><main className="bg-[#f4f3ee]"><section className="relative isolate overflow-hidden bg-night px-5 py-16 text-white sm:px-8 sm:py-24"><HeroPhoto src="/images/careers.jpg"/><div className="mx-auto max-w-6xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#a7d4b5]">Careers at Meridian</p><h1 className="mt-5 max-w-4xl font-display text-5xl font-medium leading-[1.04] tracking-[-.055em] sm:text-6xl">Build banking that works better for people.</h1><p className="mt-6 max-w-2xl text-base leading-7 text-white/60">Bring care, curiosity and craft to the small details that make a big difference in someone’s financial day.</p></div></section><section className="px-5 py-14 sm:px-8 sm:py-20"><div className="mx-auto max-w-6xl"><div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-brand">Where you can make an impact</p><h2 className="mt-4 font-display text-4xl font-medium tracking-[-.04em]">Different perspectives. Shared purpose.</h2></div><div className="mt-9 grid gap-4 sm:grid-cols-2">{groups.map(({icon:I,title,body})=><article key={title} className="flex gap-4 rounded-2xl border border-line bg-card p-6"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand"><I size={21}/></span><div><h3 className="font-display text-xl font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-ink-soft">{body}</p></div></article>)}</div><div id="roles" className="mt-10 rounded-2xl border border-line bg-white p-6 sm:p-8"><p className="text-xs font-bold uppercase tracking-[.18em] text-brand">Open roles</p><h2 className="mt-3 font-display text-2xl font-semibold">Find your next opportunity.</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-ink-soft">Role listings and application details will appear here as opportunities are published. Check back for updates.</p></div></div></section></main></PublicLayout>}
+diff --git a/src/app/community/page.tsx b/src/app/community/page.tsx
+index 4683f84..1e28c7c 100644
+--- a/src/app/community/page.tsx
++++ b/src/app/community/page.tsx
+@@ -1,7 +1,8 @@
+ import type { Metadata } from "next";
+ import Link from "next/link";
++import Image from "next/image";
+ import { PublicLayout, ArrowIcon } from "@/components/shell/PublicSite";
+ import { IconChart, IconShield, IconUsers, IconWallet } from "@/components/icons";
+ export const metadata: Metadata = { title: "Meridian Community" };
+ const topics = [{icon: IconWallet, title:"Everyday money", text:"Practical ideas for building routines, planning a budget and feeling more confident about the day to day."},{icon: IconChart, title:"Planning ahead", text:"Explore ways to set goals, prepare for milestones and make a plan that suits your circumstances."},{icon: IconUsers, title:"Business owners", text:"Stories and useful prompts for people building something of their own."}];
+-export default function CommunityPage(){return <PublicLayout><main className="bg-[#f4f3ee]"><section className="overflow-hidden bg-night px-5 py-16 text-white sm:px-8 sm:py-24"><div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[1fr_.85fr]"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-[#a7d4b5]">Meridian Community</p><h1 className="mt-5 max-w-3xl font-display text-5xl font-medium leading-[1.04] tracking-[-.055em] sm:text-6xl">Good money conversations start here.</h1><p className="mt-6 max-w-xl text-base leading-7 text-white/60">A welcoming place to learn, share perspectives and find ideas for the financial moments that matter to you.</p><Link href="/register" className="mt-8 inline-flex items-center gap-3 rounded-xl bg-[#c8e4d1] px-5 py-3.5 text-sm font-bold text-[#163d30]">Join Meridian <ArrowIcon className="h-4 w-4"/></Link></div><div className="rounded-[26px] border border-white/10 bg-white/[.05] p-5 sm:p-7"><div className="flex items-center justify-between"><p className="text-sm font-bold">Community notes</p><IconUsers size={19} className="text-[#a7d4b5]"/></div><div className="mt-5 space-y-3">{[["01", "Money, without the jargon", "Start with a question. Leave with a clearer next step."],["02", "Small steps, real progress", "Share habits and ideas that work in everyday life."],["03", "A place to grow together", "Find inspiration from people on their own journeys."]].map(([n,title,body])=><article key={n} className="rounded-xl bg-white/[.06] p-4"><div className="flex gap-3"><span className="font-display text-xs font-bold text-[#a7d4b5]">{n}</span><div><h2 className="text-sm font-semibold">{title}</h2><p className="mt-1 text-xs leading-5 text-white/50">{body}</p></div></div></article>)}</div></div></div></section><section className="px-5 py-16 sm:px-8 sm:py-20"><div className="mx-auto max-w-7xl"><div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-brand">Explore the conversation</p><h2 className="mt-4 font-display text-4xl font-medium tracking-[-.04em]">A community for every chapter.</h2></div><div className="mt-9 grid gap-4 md:grid-cols-3">{topics.map(({icon:Icon,title,text})=><article key={title} className="rounded-2xl border border-line bg-card p-6"><span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand"><Icon size={21}/></span><h3 className="mt-6 font-display text-xl font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-ink-soft">{text}</p></article>)}</div><p className="mt-8 flex items-start gap-3 rounded-xl border border-line bg-white/70 p-4 text-xs leading-5 text-ink-soft"><IconShield size={17} className="shrink-0 text-brand"/>Keep personal account details private in public conversations. Community discussions are for general information and aren’t personal financial advice.</p></div></section></main></PublicLayout>}
++export default function CommunityPage(){return <PublicLayout><main className="bg-[#f4f3ee]"><section className="overflow-hidden bg-night px-5 py-16 text-white sm:px-8 sm:py-24"><div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-[1fr_.85fr]"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-[#a7d4b5]">Meridian Community</p><h1 className="mt-5 max-w-3xl font-display text-5xl font-medium leading-[1.04] tracking-[-.055em] sm:text-6xl">Good money conversations start here.</h1><p className="mt-6 max-w-xl text-base leading-7 text-white/60">A welcoming place to learn, share perspectives and find ideas for the financial moments that matter to you.</p><Link href="/register" className="mt-8 inline-flex items-center gap-3 rounded-xl bg-[#c8e4d1] px-5 py-3.5 text-sm font-bold text-[#163d30]">Join Meridian <ArrowIcon className="h-4 w-4"/></Link></div><div className="rounded-[26px] border border-white/10 bg-white/[.05] p-5 sm:p-7"><div className="flex items-center justify-between"><p className="text-sm font-bold">Community notes</p><IconUsers size={19} className="text-[#a7d4b5]"/></div><div className="mt-5 space-y-3">{[["01", "Money, without the jargon", "Start with a question. Leave with a clearer next step."],["02", "Small steps, real progress", "Share habits and ideas that work in everyday life."],["03", "A place to grow together", "Find inspiration from people on their own journeys."]].map(([n,title,body])=><article key={n} className="rounded-xl bg-white/[.06] p-4"><div className="flex gap-3"><span className="font-display text-xs font-bold text-[#a7d4b5]">{n}</span><div><h2 className="text-sm font-semibold">{title}</h2><p className="mt-1 text-xs leading-5 text-white/50">{body}</p></div></div></article>)}</div></div></div></section><section className="px-5 py-16 sm:px-8 sm:py-20"><div className="mx-auto max-w-7xl"><div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-brand">Explore the conversation</p><h2 className="mt-4 font-display text-4xl font-medium tracking-[-.04em]">A community for every chapter.</h2></div><div className="mt-9 grid gap-4 md:grid-cols-3">{topics.map(({icon:Icon,title,text})=><article key={title} className="rounded-2xl border border-line bg-card p-6"><span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand"><Icon size={21}/></span><h3 className="mt-6 font-display text-xl font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-ink-soft">{text}</p></article>)}</div><div className="mt-10 overflow-hidden rounded-[26px] shadow-card"><Image src="/images/community.jpg" alt="People talking around a table in a bright community hall" width={1200} height={900} sizes="(max-width: 1024px) 100vw, 90vw" className="h-[240px] w-full object-cover sm:h-[340px]"/></div><p className="mt-8 flex items-start gap-3 rounded-xl border border-line bg-white/70 p-4 text-xs leading-5 text-ink-soft"><IconShield size={17} className="shrink-0 text-brand"/>Keep personal account details private in public conversations. Community discussions are for general information and aren’t personal financial advice.</p></div></section></main></PublicLayout>}
+diff --git a/src/app/investment-centres/page.tsx b/src/app/investment-centres/page.tsx
+index 4bc6a6b..7530edd 100644
+--- a/src/app/investment-centres/page.tsx
++++ b/src/app/investment-centres/page.tsx
+@@ -1,7 +1,8 @@
+ import type { Metadata } from "next";
+ import Link from "next/link";
+ import { PublicLayout } from "@/components/shell/PublicSite";
++import { HeroPhoto } from "@/components/pages/Photos";
+ import { IconBuilding, IconChart, IconUsers } from "@/components/icons";
+ export const metadata: Metadata = { title: "Investment centres | Meridian" };
+ const centerFeatures: {icon:typeof IconBuilding; title:string; body:string}[] = [{icon:IconChart,title:"Plan for your goals",body:"Put your priorities into words and explore the questions you want to answer."},{icon:IconUsers,title:"Talk it through",body:"A considered conversation can help you understand trade-offs and next steps."},{icon:IconBuilding,title:"Meet in a centre",body:"Ask about investment centre locations and appointment availability through your usual Meridian contact channel."}];
+-export default function InvestmentCentresPage(){return <PublicLayout><main className="bg-[#f4f3ee]"><section className="bg-night px-5 py-16 text-white sm:px-8 sm:py-24"><div className="mx-auto grid max-w-7xl items-end gap-8 lg:grid-cols-[1fr_auto]"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-[#a7d4b5]">Investment centres</p><h1 className="mt-5 max-w-4xl font-display text-5xl font-medium leading-[1.04] tracking-[-.055em] sm:text-6xl">A thoughtful space for your next financial conversation.</h1><p className="mt-6 max-w-2xl text-base leading-7 text-white/60">Explore investment guidance, understand your options and prepare for a conversation about the goals you’re working toward.</p></div><span className="grid h-20 w-20 place-items-center rounded-3xl border border-white/10 bg-white/5 text-[#c8e4d1]"><IconBuilding size={37}/></span></div></section><section className="px-5 py-14 sm:px-8 sm:py-20"><div className="mx-auto max-w-6xl"><div className="grid gap-4 md:grid-cols-3">{centerFeatures.map(({icon:I,title,body})=><article key={title} className="rounded-2xl border border-line bg-card p-6"><span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand"><I size={21}/></span><h2 className="mt-5 font-display text-xl font-semibold">{title}</h2><p className="mt-2 text-sm leading-6 text-ink-soft">{body}</p></article>)}</div><div className="mt-8 rounded-2xl bg-[#e7ede6] p-6 sm:p-8"><h2 className="font-display text-2xl font-semibold">Prepare for a conversation</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-ink-soft">Think about your time horizon, what you want the money to do and how much uncertainty you’re comfortable with. Investments can go down as well as up, and you may get back less than you invest. This page is general information, not personal investment advice.</p><Link href="/contact" className="mt-5 inline-flex rounded-lg bg-brand px-4 py-2.5 text-sm font-bold text-white">Contact Meridian</Link></div></div></section></main></PublicLayout>}
++export default function InvestmentCentresPage(){return <PublicLayout><main className="bg-[#f4f3ee]"><section className="relative isolate overflow-hidden bg-night px-5 py-16 text-white sm:px-8 sm:py-24"><HeroPhoto src="/images/investments.jpg" position="70% center"/><div className="mx-auto grid max-w-7xl items-end gap-8 lg:grid-cols-[1fr_auto]"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-[#a7d4b5]">Investment centres</p><h1 className="mt-5 max-w-4xl font-display text-5xl font-medium leading-[1.04] tracking-[-.055em] sm:text-6xl">A thoughtful space for your next financial conversation.</h1><p className="mt-6 max-w-2xl text-base leading-7 text-white/60">Explore investment guidance, understand your options and prepare for a conversation about the goals you’re working toward.</p></div><span className="grid h-20 w-20 place-items-center rounded-3xl border border-white/10 bg-white/5 text-[#c8e4d1]"><IconBuilding size={37}/></span></div></section><section className="px-5 py-14 sm:px-8 sm:py-20"><div className="mx-auto max-w-6xl"><div className="grid gap-4 md:grid-cols-3">{centerFeatures.map(({icon:I,title,body})=><article key={title} className="rounded-2xl border border-line bg-card p-6"><span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand"><I size={21}/></span><h2 className="mt-5 font-display text-xl font-semibold">{title}</h2><p className="mt-2 text-sm leading-6 text-ink-soft">{body}</p></article>)}</div><div className="mt-8 rounded-2xl bg-[#e7ede6] p-6 sm:p-8"><h2 className="font-display text-2xl font-semibold">Prepare for a conversation</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-ink-soft">Think about your time horizon, what you want the money to do and how much uncertainty you’re comfortable with. Investments can go down as well as up, and you may get back less than you invest. This page is general information, not personal investment advice.</p><Link href="/contact" className="mt-5 inline-flex rounded-lg bg-brand px-4 py-2.5 text-sm font-bold text-white">Contact Meridian</Link></div></div></section></main></PublicLayout>}
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+index a16ccf9..e482ce8 100644
+--- a/src/app/layout.tsx
++++ b/src/app/layout.tsx
+@@ -14,12 +14,36 @@ const grotesk = Space_Grotesk({
+ });
+ 
+ export const metadata: Metadata = {
++  metadataBase: new URL("https://meridian-bank-v2.vercel.app"),
+   title: "Meridian — Online banking",
+   description:
+     "Check balances, move money, and manage payees in one calm place.",
+   icons: {
+     icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%230F5A48'/%3E%3Cpath d='M16 7a9.5 9.5 0 0 1 0 19M16 7a9.5 9.5 0 0 0 0 19M7 12.5h18M7 19.5h18' stroke='%23EAF4EF' stroke-width='1.8' stroke-linecap='round' fill='none'/%3E%3C/svg%3E",
+   },
++  openGraph: {
++    type: "website",
++    siteName: "Meridian",
++    title: "Meridian — A clearer way to bank",
++    description:
++      "See your accounts, move money and stay on top of everyday banking.",
++    url: "/",
++    images: [
++      {
++        url: "/images/og-meridian.jpg",
++        width: 1200,
++        height: 630,
++        alt: "Meridian — a clearer way to bank",
++      },
++    ],
++  },
++  twitter: {
++    card: "summary_large_image",
++    title: "Meridian — A clearer way to bank",
++    description:
++      "See your accounts, move money and stay on top of everyday banking.",
++    images: ["/images/og-meridian.jpg"],
++  },
+ };
+ 
+ export default function RootLayout({
+diff --git a/src/app/loans/business/page.tsx b/src/app/loans/business/page.tsx
+index 17d23eb..3f782f7 100644
+--- a/src/app/loans/business/page.tsx
++++ b/src/app/loans/business/page.tsx
+@@ -1,4 +1,5 @@
+ import type { Metadata } from "next";
+ import { PublicInfoPage } from "@/components/pages/PublicInfoPage";
++import { PhotoPanel } from "@/components/pages/Photos";
+ export const metadata: Metadata = { title: "Business loans | Meridian" };
+-export default function BusinessLoansPage(){return <PublicInfoPage eyebrow="Business finance" title="Backing your next business move." intro="Whether you’re managing day-to-day cash flow or planning for what comes next, start with a clear view of the financing your business may need." sections={[{title:"Working capital",body:"Plan for operating costs, seasonal demand and the timing between invoices and payments."},{title:"Equipment and growth",body:"Consider how financing could support tools, technology or an expansion plan, alongside its full cost."},{title:"Built around your business",body:"Prepare a view of revenue, outgoings, current borrowing and the purpose of funding before discussing options."},{title:"A thoughtful next step",body:"A lender will assess eligibility, affordability and business circumstances. Rates and terms vary, and borrowing carries risk."}]} action={{label:"Talk to Meridian",href:"/contact"}}/>}
++export default function BusinessLoansPage(){return <PublicInfoPage eyebrow="Business finance" title="Backing your next business move." intro="Whether you’re managing day-to-day cash flow or planning for what comes next, start with a clear view of the financing your business may need." sections={[{title:"Working capital",body:"Plan for operating costs, seasonal demand and the timing between invoices and payments."},{title:"Equipment and growth",body:"Consider how financing could support tools, technology or an expansion plan, alongside its full cost."},{title:"Built around your business",body:"Prepare a view of revenue, outgoings, current borrowing and the purpose of funding before discussing options."},{title:"A thoughtful next step",body:"A lender will assess eligibility, affordability and business circumstances. Rates and terms vary, and borrowing carries risk."}]} illustration={<PhotoPanel src="/images/business-loan.jpg" alt="A bakery owner arranging pastries behind the shop counter" width={1200} height={900} />} action={{label:"Talk to Meridian",href:"/contact"}}/>}
+diff --git a/src/app/loans/car/page.tsx b/src/app/loans/car/page.tsx
+index 4c1777f..3fc9062 100644
+--- a/src/app/loans/car/page.tsx
++++ b/src/app/loans/car/page.tsx
+@@ -1,4 +1,5 @@
+ import type { Metadata } from "next";
+ import { PublicInfoPage } from "@/components/pages/PublicInfoPage";
++import { PhotoPanel } from "@/components/pages/Photos";
+ export const metadata: Metadata = { title: "Car loans | Meridian" };
+-export default function CarLoansPage(){return <PublicInfoPage eyebrow="Car finance" title="A clearer view before you hit the road." intro="Compare the full cost of financing a vehicle, plan for the monthly payment and understand the details before choosing a car loan." sections={[{title:"Start with your budget",body:"Consider a monthly payment alongside insurance, fuel, maintenance and other regular costs."},{title:"Compare the full cost",body:"Look beyond the monthly figure. Review the APR, fees, term, deposit and total amount repayable."},{title:"Know the vehicle details",body:"The vehicle’s age, value and condition may affect the finance options a lender can offer."},{title:"Borrow with care",body:"Finance is subject to eligibility and affordability checks. Missing payments can have serious consequences."}]} action={{label:"View lending options",href:"/loans"}}/>}
++export default function CarLoansPage(){return <PublicInfoPage eyebrow="Car finance" title="A clearer view before you hit the road." intro="Compare the full cost of financing a vehicle, plan for the monthly payment and understand the details before choosing a car loan." sections={[{title:"Start with your budget",body:"Consider a monthly payment alongside insurance, fuel, maintenance and other regular costs."},{title:"Compare the full cost",body:"Look beyond the monthly figure. Review the APR, fees, term, deposit and total amount repayable."},{title:"Know the vehicle details",body:"The vehicle’s age, value and condition may affect the finance options a lender can offer."},{title:"Borrow with care",body:"Finance is subject to eligibility and affordability checks. Missing payments can have serious consequences."}]} illustration={<PhotoPanel src="/images/car-loan.jpg" alt="A compact car parked on a quiet leafy residential street" width={1200} height={900} />} action={{label:"View lending options",href:"/loans"}}/>}
+diff --git a/src/app/loans/mortgage/page.tsx b/src/app/loans/mortgage/page.tsx
+index e1f02c9..62b6d82 100644
+--- a/src/app/loans/mortgage/page.tsx
++++ b/src/app/loans/mortgage/page.tsx
+@@ -1,6 +1,6 @@
+ import type { Metadata } from "next";
+ import { PublicInfoPage } from "@/components/pages/PublicInfoPage";
+-import { MortgageIllustration } from "@/components/pages/MortgageIllustration";
++import { PhotoPanel } from "@/components/pages/Photos";
+ 
+ export const metadata: Metadata = {
+   title: "Mortgage guide | Meridian",
+@@ -23,7 +23,7 @@ export default function MortgagePage() {
+       { label: "GOV.UK: Preparing to buy a home", href: "https://www.gov.uk/buying-a-home/preparing-to-buy" },
+       { label: "MoneyHelper: Mortgage fees and costs", href: "https://www.moneyhelper.org.uk/en/homes/buying-a-home/estimate-your-overall-buying-and-moving-costs" },
+     ]}
+-    illustration={<MortgageIllustration />}
++    illustration={<PhotoPanel src="/images/mortgage-home.jpg" alt="A Victorian terraced house with a deep green front door" width={1200} height={900} />}
+     action={{ label: "View lending options", href: "/loans" }}
+   />;
+ }
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 0f69d2b..658dcba 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -1,8 +1,8 @@
+ import type { Metadata } from "next";
+ import Link from "next/link";
++import Image from "next/image";
+ import { ArrowIcon, PublicLayout } from "@/components/shell/PublicSite";
+ import { IconShield, IconSend, IconWallet, IconCheck, IconArrowUpRight, IconBriefcase, IconCar, IconHome, IconChart, IconUsers, IconSmartphone, IconCircleHelp } from "@/components/icons";
+-import { CardsIllustration, InsightIllustration } from "@/components/pages/MarketingVisuals";
+ import { ACCOUNT_TYPE_GROUPS, ACCOUNT_LABELS, ACCOUNT_DESCRIPTIONS } from "@/lib/banking";
+ 
+ export const metadata: Metadata = {
+@@ -45,8 +45,10 @@ function PreviewCard() {
+ export default function Home() {
+   return <PublicLayout>
+     <main>
+-      <section className="overflow-hidden bg-night text-white">
+-        <div className="mx-auto grid max-w-7xl items-center gap-14 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[1.05fr_.95fr] lg:gap-10 lg:py-24">
++      <section className="relative isolate overflow-hidden bg-night text-white">
++        <Image src="/images/hero-meridian.jpg" alt="" aria-hidden fill priority sizes="100vw" className="-z-10 object-cover object-[76%_center]"/>
++        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(16,32,25,.97)_0%,rgba(16,32,25,.94)_58%,rgba(16,32,25,.86)_100%)] lg:bg-[linear-gradient(100deg,#102019_0%,rgba(16,32,25,.93)_36%,rgba(16,32,25,.55)_66%,rgba(16,32,25,.22)_100%)]"/>
++        <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[1.05fr_.95fr] lg:gap-10 lg:py-24">
+           <div className="relative z-[1]"><p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[.04] px-3.5 py-2 text-xs font-semibold text-emerald-100/80"><span className="h-1.5 w-1.5 rounded-full bg-[#a7d4b5]"/>A little more clarity, every day</p><h1 className="mt-6 max-w-2xl font-display text-[clamp(3.1rem,7vw,5.8rem)] font-medium leading-[.98] tracking-[-.065em]">A clearer way<br/>to <span className="text-[#a7d4b5]">bank.</span></h1><p className="mt-6 max-w-lg text-base leading-7 text-white/60 sm:text-lg sm:leading-8">A thoughtful place for your everyday money. See the whole picture, make your next move and get on with what matters.</p><div className="mt-8 flex flex-wrap gap-3"><Link href="/login?demo=1" className="inline-flex items-center gap-3 rounded-xl bg-[#c8e4d1] px-5 py-3.5 text-sm font-bold text-[#163d30] transition hover:bg-white">Explore the live demo <ArrowIcon className="h-4 w-4"/></Link><Link href="/register" className="inline-flex items-center rounded-xl border border-white/20 px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10">Create an account</Link></div><p className="mt-5 text-xs text-white/45">Try the sample account instantly. No sign-up needed.</p></div>
+           <PreviewCard />
+         </div>
+@@ -57,13 +59,13 @@ export default function Home() {
+ 
+       <AccountOptions />
+ 
+-      <section className="overflow-hidden bg-white px-5 py-16 sm:px-8 sm:py-24"><div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16"><div className="order-2 lg:order-1"><div className="aspect-[1.45] overflow-hidden rounded-[26px] shadow-card"><InsightIllustration/></div></div><div className="order-1 lg:order-2"><p className="text-xs font-bold uppercase tracking-[.2em] text-brand">One useful overview</p><h2 className="mt-4 max-w-xl font-display text-4xl font-medium leading-tight tracking-[-.045em] text-ink sm:text-5xl">See what’s coming in and going out.</h2><p className="mt-5 max-w-xl text-base leading-7 text-ink-soft">Understand your balances and recent activity without jumping between screens. The dashboard brings the numbers and the details together.</p><ul className="mt-7 space-y-4">{["Bring account balances into one view", "Review recent activity and pending payments", "Explore income, spending and category summaries", "See indicative currency rates where available"].map((item) => <li key={item} className="flex items-start gap-3 text-sm font-medium text-ink"><span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-soft text-brand"><IconCheck size={13}/></span>{item}</li>)}</ul><Link href="/register" className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-deep">Explore your dashboard <ArrowIcon className="h-4 w-4"/></Link></div></div></section>
++      <section className="overflow-hidden bg-white px-5 py-16 sm:px-8 sm:py-24"><div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16"><div className="order-2 lg:order-1"><div className="aspect-[1.45] overflow-hidden rounded-[26px] shadow-card"><Image src="/images/insight-overview.jpg" alt="Reviewing recent account activity on a phone beside a notebook" width={1450} height={1000} sizes="(max-width: 1024px) 100vw, 46vw" className="h-full w-full object-cover"/></div></div><div className="order-1 lg:order-2"><p className="text-xs font-bold uppercase tracking-[.2em] text-brand">One useful overview</p><h2 className="mt-4 max-w-xl font-display text-4xl font-medium leading-tight tracking-[-.045em] text-ink sm:text-5xl">See what’s coming in and going out.</h2><p className="mt-5 max-w-xl text-base leading-7 text-ink-soft">Understand your balances and recent activity without jumping between screens. The dashboard brings the numbers and the details together.</p><ul className="mt-7 space-y-4">{["Bring account balances into one view", "Review recent activity and pending payments", "Explore income, spending and category summaries", "See indicative currency rates where available"].map((item) => <li key={item} className="flex items-start gap-3 text-sm font-medium text-ink"><span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-soft text-brand"><IconCheck size={13}/></span>{item}</li>)}</ul><Link href="/register" className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-deep">Explore your dashboard <ArrowIcon className="h-4 w-4"/></Link></div></div></section>
+ 
+-      <section className="overflow-hidden bg-[#f4f3ee] px-5 py-16 sm:px-8 sm:py-24"><div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-brand">More control, close at hand</p><h2 className="mt-4 max-w-xl font-display text-4xl font-medium leading-tight tracking-[-.045em] text-ink sm:text-5xl">Cards and payments, organised around you.</h2><p className="mt-5 max-w-xl text-base leading-7 text-ink-soft">Manage the everyday details from the same place: keep your payees organised, review payment activity and adjust card settings.</p><div className="mt-7 grid gap-3 sm:grid-cols-2">{[["Payments", "Make and review transfers."], ["Payees", "Keep saved recipients up to date."], ["Cards", "Manage card settings and controls."], ["Statements", "Find and export account statements."]].map(([title, body]) => <div key={title} className="rounded-xl border border-line bg-card p-4"><p className="text-sm font-bold">{title}</p><p className="mt-1 text-xs leading-5 text-ink-soft">{body}</p></div>)}</div><Link href="/about" className="mt-7 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-deep">See what Meridian offers <ArrowIcon className="h-4 w-4"/></Link></div><div className="aspect-[1.45] overflow-hidden rounded-[26px] shadow-card"><CardsIllustration/></div></div></section>
++      <section className="overflow-hidden bg-[#f4f3ee] px-5 py-16 sm:px-8 sm:py-24"><div className="mx-auto grid max-w-7xl items-center gap-10 lg:grid-cols-2 lg:gap-16"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-brand">More control, close at hand</p><h2 className="mt-4 max-w-xl font-display text-4xl font-medium leading-tight tracking-[-.045em] text-ink sm:text-5xl">Cards and payments, organised around you.</h2><p className="mt-5 max-w-xl text-base leading-7 text-ink-soft">Manage the everyday details from the same place: keep your payees organised, review payment activity and adjust card settings.</p><div className="mt-7 grid gap-3 sm:grid-cols-2">{[["Payments", "Make and review transfers."], ["Payees", "Keep saved recipients up to date."], ["Cards", "Manage card settings and controls."], ["Statements", "Find and export account statements."]].map(([title, body]) => <div key={title} className="rounded-xl border border-line bg-card p-4"><p className="text-sm font-bold">{title}</p><p className="mt-1 text-xs leading-5 text-ink-soft">{body}</p></div>)}</div><Link href="/about" className="mt-7 inline-flex items-center gap-2 text-sm font-bold text-brand hover:text-brand-deep">See what Meridian offers <ArrowIcon className="h-4 w-4"/></Link></div><div className="aspect-[1.45] overflow-hidden rounded-[26px] shadow-card"><Image src="/images/cards-payments.jpg" alt="Tapping a Meridian debit card on a card reader at a café counter" width={1450} height={1000} sizes="(max-width: 1024px) 100vw, 46vw" className="h-full w-full object-cover"/></div></div></section>
+ 
+       <section className="bg-white px-5 py-16 sm:px-8 sm:py-24"><div className="mx-auto max-w-7xl"><div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-brand">A broader view</p><h2 className="mt-4 font-display text-4xl font-medium tracking-[-.045em] text-ink sm:text-5xl">The details that make it yours.</h2></div><p className="max-w-md text-sm leading-6 text-ink-soft">A connected set of everyday tools, designed to help you keep things clear and move at your own pace.</p></div><div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[["Accounts", "Open and manage everyday and savings accounts, and keep track of balances."], ["Activity", "Search and review transactions across your accounts."], ["Statements", "Access account statements and download them when you need a copy."], ["Notifications", "Stay informed with account and payment updates."], ["Profile", "Keep your personal details and preferences current."], ["Security", "Review sign-in and account security settings."], ["Currency", "View account balances in supported currencies."], ["Support", "Find guidance for common account tasks in the help centre."]].map(([title, body], i) => <article key={title} className="rounded-2xl border border-line bg-[#fdfdfb] p-5"><span className="font-display text-xs font-semibold text-brand">0{i+1}</span><h3 className="mt-4 font-display text-xl font-semibold tracking-tight">{title}</h3><p className="mt-2 text-sm leading-6 text-ink-soft">{body}</p></article>)}</div></div></section>
+ 
+-      <section className="bg-[#f4f3ee] px-5 py-16 sm:px-8 sm:py-24"><div className="mx-auto max-w-7xl"><div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-brand">Finance for what’s next</p><h2 className="mt-4 font-display text-4xl font-medium tracking-[-.045em] text-ink sm:text-5xl">Big plans deserve thoughtful choices.</h2><p className="mt-4 text-base leading-7 text-ink-soft">Explore lending and investment topics, understand the questions to ask and make decisions at your own pace.</p></div><div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[[IconHome,"Mortgage guide","Understand the home-buying and mortgage journey.","/loans/mortgage"],[IconBriefcase,"Business loans","Consider financing for your business plans.","/loans/business"],[IconCar,"Car loans","Get a clearer view of vehicle finance.","/loans/car"],[IconChart,"Investments","Explore investment guidance and centres.","/investment-centres"],[IconUsers,"Community","Learn and share perspectives together.","/community"]].map(([FeatureIcon,title,body,href])=>{const I=FeatureIcon as typeof IconWallet;return <Link key={title as string} href={href as string} className="group rounded-2xl border border-line bg-card p-5 transition hover:-translate-y-1 hover:shadow-card"><span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand"><I size={21}/></span><h3 className="mt-5 font-display text-xl font-semibold">{title as string}</h3><p className="mt-2 min-h-12 text-sm leading-6 text-ink-soft">{body as string}</p><span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-brand">Explore <ArrowIcon className="h-4 w-4 transition group-hover:translate-x-1"/></span></Link>})}</div><Link href="/loans" className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-brand">See all lending options <ArrowIcon className="h-4 w-4"/></Link></div></section>
++      <section className="bg-[#f4f3ee] px-5 py-16 sm:px-8 sm:py-24"><div className="mx-auto max-w-7xl"><div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-brand">Finance for what’s next</p><h2 className="mt-4 font-display text-4xl font-medium tracking-[-.045em] text-ink sm:text-5xl">Big plans deserve thoughtful choices.</h2><p className="mt-4 text-base leading-7 text-ink-soft">Explore lending and investment topics, understand the questions to ask and make decisions at your own pace.</p></div><div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[[IconHome,"Mortgage guide","Understand the home-buying and mortgage journey.","/loans/mortgage","/images/mortgage-home.jpg"],[IconBriefcase,"Business loans","Consider financing for your business plans.","/loans/business","/images/business-loan.jpg"],[IconCar,"Car loans","Get a clearer view of vehicle finance.","/loans/car","/images/car-loan.jpg"],[IconChart,"Investments","Explore investment guidance and centres.","/investment-centres","/images/investments.jpg"],[IconUsers,"Community","Learn and share perspectives together.","/community","/images/community.jpg"]].map(([FeatureIcon,title,body,href,photo])=>{const I=FeatureIcon as typeof IconWallet;return <Link key={title as string} href={href as string} className="group overflow-hidden rounded-2xl border border-line bg-card transition hover:-translate-y-1 hover:shadow-card"><Image src={photo as string} alt="" width={1200} height={900} sizes="(max-width: 640px) 100vw, 25vw" className="h-32 w-full object-cover transition duration-500 group-hover:scale-[1.04]"/><div className="p-5"><span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand"><I size={21}/></span><h3 className="mt-4 font-display text-xl font-semibold">{title as string}</h3><p className="mt-2 min-h-12 text-sm leading-6 text-ink-soft">{body as string}</p><span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-brand">Explore <ArrowIcon className="h-4 w-4 transition group-hover:translate-x-1"/></span></div></Link>})}</div><Link href="/loans" className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-brand">See all lending options <ArrowIcon className="h-4 w-4"/></Link></div></section>
+ 
+       <section className="bg-night px-5 py-14 text-white sm:px-8"><div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_1.2fr] lg:items-center"><div><span className="grid h-11 w-11 place-items-center rounded-xl bg-white/10 text-[#c8e4d1]"><IconSmartphone size={21}/></span><p className="mt-5 text-xs font-bold uppercase tracking-[.2em] text-[#a7d4b5]">Coming soon</p><h2 className="mt-3 font-display text-3xl font-medium tracking-[-.04em] sm:text-4xl">Meridian in your pocket.</h2><p className="mt-3 max-w-lg text-sm leading-6 text-white/55">A mobile app is on its way. Until then, use Meridian online from your phone, tablet or computer.</p><Link href="/mobile-app" className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#c8e4d1]">Find out more <ArrowIcon className="h-4 w-4"/></Link></div><div className="grid gap-3 sm:grid-cols-3">{[[IconCircleHelp,"Quick answers","Visit our FAQ"],[IconUsers,"Shared knowledge","Explore community"],[IconBriefcase,"Work with us","See careers"]].map(([FeatureIcon,title,body])=>{const I=FeatureIcon as typeof IconWallet;const href=title==="Quick answers"?"/faq":title==="Shared knowledge"?"/community":"/careers";return <Link key={title as string} href={href} className="rounded-xl border border-white/10 bg-white/[.04] p-4"><I size={20} className="text-[#c8e4d1]"/><p className="mt-4 text-sm font-bold">{title as string}</p><p className="mt-1 text-xs text-white/45">{body as string}</p></Link>})}</div></div></section>
+ 
+diff --git a/src/components/pages/Photos.tsx b/src/components/pages/Photos.tsx
+new file mode 100644
+index 0000000..de62482
+--- /dev/null
++++ b/src/components/pages/Photos.tsx
+@@ -0,0 +1,48 @@
++import Image from "next/image";
++
++/** Full-bleed photographic backdrop for a page hero. Renders behind the
++ *  section's own content via negative z-index, so the markup of the hero
++ *  itself doesn't need to change. Uses `isolate` + `-z-10` so the image sits
++ *  above the section background but below the text. */
++export function HeroPhoto({ src, position = "center" }: { src: string; position?: string }) {
++  return (
++    <>
++      <Image
++        src={src}
++        alt=""
++        aria-hidden
++        fill
++        priority
++        sizes="100vw"
++        className="-z-10 object-cover"
++        style={{ objectPosition: position }}
++      />
++      <div
++        aria-hidden
++        className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(16,32,25,.94)_0%,rgba(16,32,25,.78)_55%,rgba(16,32,25,.95)_100%)]"
++      />
++    </>
++  );
++}
++
++/** Contained photo panel with a fixed aspect ratio — used where a page passes
++ *  an `illustration` slot and expects something that fills the box. */
++export function PhotoPanel({
++  src,
++  alt,
++  width,
++  height,
++  sizes = "(max-width: 1024px) 100vw, 45vw",
++}: {
++  src: string;
++  alt: string;
++  width: number;
++  height: number;
++  sizes?: string;
++}) {
++  return (
++    <div className="relative" style={{ aspectRatio: `${width} / ${height}` }}>
++      <Image src={src} alt={alt} fill sizes={sizes} className="object-cover" />
++    </div>
++  );
++}

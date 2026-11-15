@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { LanguageProvider } from "@/components/i18n/LanguageProvider";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -14,11 +15,35 @@ const grotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://meridian-bank-v2.vercel.app"),
   title: "Meridian — Online banking",
   description:
     "Check balances, move money, and manage payees in one calm place.",
   icons: {
     icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%230F5A48'/%3E%3Cpath d='M16 7a9.5 9.5 0 0 1 0 19M16 7a9.5 9.5 0 0 0 0 19M7 12.5h18M7 19.5h18' stroke='%23EAF4EF' stroke-width='1.8' stroke-linecap='round' fill='none'/%3E%3C/svg%3E",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "Meridian",
+    title: "Meridian — A clearer way to bank",
+    description:
+      "See your accounts, move money and stay on top of everyday banking.",
+    url: "/",
+    images: [
+      {
+        url: "/images/og-meridian.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Meridian — a clearer way to bank",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Meridian — A clearer way to bank",
+    description:
+      "See your accounts, move money and stay on top of everyday banking.",
+    images: ["/images/og-meridian.jpg"],
   },
 };
 
@@ -33,7 +58,7 @@ export default function RootLayout({
         className={`${manrope.variable} ${grotesk.variable} bg-paper font-sans text-ink antialiased`}
         suppressHydrationWarning
       >
-        {children}
+        <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>
   );

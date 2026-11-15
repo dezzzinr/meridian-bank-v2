@@ -6,7 +6,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "i18n:audit": "tsx scripts/i18n-audit.ts",
+    "i18n:verify": "tsx scripts/i18n-verify.ts",
+    "i18n:merge": "tsx scripts/i18n-merge.ts",
+    "i18n:fill": "tsx scripts/i18n-fill.ts"
   },
   "dependencies": {
     "@next/env": "^16.2.6",

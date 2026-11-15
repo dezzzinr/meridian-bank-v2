@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { IconSend, IconShield, IconWallet, LogoMark } from "@/components/icons";
+import { LanguageSwitcher } from "@/components/i18n/LanguageSwitcher";
 
 const FEATURES = [
   {
@@ -63,17 +64,27 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             ))}
           </div>
         </div>
-        <p className="relative text-xs text-emerald-100/35">
-          Protected by 256-bit encryption & multi-factor authentication.
-        </p>
+        <div className="relative flex items-center justify-between gap-4">
+          <p className="text-xs text-emerald-100/35">
+            Protected by 256-bit encryption & multi-factor authentication.
+          </p>
+          <span className="shrink-0">
+            <LanguageSwitcher variant="dark" />
+          </span>
+        </div>
       </div>
 
       <div className="flex items-center justify-center px-4 py-10 sm:px-8">
         <div className="w-full max-w-sm">
-          <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <LogoMark size={32} />
-            <span className="font-display text-xl font-semibold tracking-tight text-ink">
-              Meridian
+          <div className="mb-8 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <LogoMark size={32} />
+              <span className="font-display text-xl font-semibold tracking-tight text-ink">
+                Meridian
+              </span>
+            </div>
+            <span className="lg:hidden">
+              <LanguageSwitcher variant="light" />
             </span>
           </div>
           {children}
