@@ -31,7 +31,7 @@ interface ShellUser {
   name: string;
   email: string;
   role: "user" | "admin";
-  status: "active" | "suspended" | "closed";
+  status: "pending" | "active" | "suspended" | "closed" | "rejected";
   avatarUrl?: string | null;
 }
 

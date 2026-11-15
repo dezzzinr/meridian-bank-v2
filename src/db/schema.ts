@@ -25,7 +25,7 @@ export const users = pgTable("users", {
   securityAnswerHash: text("security_answer_hash"),
   accountLocked: boolean("account_locked").notNull().default(false),
   role: text("role", { enum: ["user", "admin"] }).notNull().default("user"),
-  status: text("status", { enum: ["active", "suspended", "closed"] })
+  status: text("status", { enum: ["pending", "active", "suspended", "closed", "rejected"] })
     .notNull()
     .default("active"),
   currency: text("currency").notNull().default("USD"),

@@ -2,7 +2,6 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { accounts, transactions, users } from "@/db/schema";
 import { ACCOUNT_TYPES, parseAmount, TERM_RATES, termMaturity, type AccountType } from "@/lib/banking";
-import { createSession, setSessionCookie } from "@/lib/auth";
 import { apiError, readBody, str } from "@/lib/api";
 import { hashPassword } from "@/lib/password";
 import { generateAccountNumber } from "@/lib/ids";
@@ -46,7 +45,7 @@ export async function POST(req: Request) {
   try {
     const user = await db.transaction(async (tx) => {
       const [createdUser] = await tx.insert(users).values({
-        name, email, passwordHash: hashPassword(password), currency, region: regionForCurrency(currency),
+        name, email, passwordHash: hashPassword(password), currency, region: regionForCurrency(currency), status: "pending",
         country, phone, dateOfBirth, addressLine, city, postalCode,
       }).returning();
       const number = generateAccountNumber();
@@ -60,9 +59,7 @@ export async function POST(req: Request) {
       if (amount > 0) await tx.insert(transactions).values({ userId: createdUser.id, accountId: account.id, kind: "credit", category: "Other", description: "Opening deposit", amountCents: amount, status: "completed" });
       return createdUser;
     });
-    const { token, expiresAt } = await createSession(user.id);
-    await setSessionCookie(token, expiresAt);
-    return Response.json({ id: user.id, name: user.name, email: user.email, token }, { status: 201 });
+    return Response.json({ id: user.id, name: user.name, email: user.email, pendingApproval: true }, { status: 201 });
   } catch (error) {
     if (error && typeof error === "object" && "code" in error && error.code === "23505") return apiError(409, "An account with this email already exists.");
     throw error;

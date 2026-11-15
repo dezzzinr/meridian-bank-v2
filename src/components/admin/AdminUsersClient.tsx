@@ -24,19 +24,28 @@ interface AdminUser {
   name: string;
   email: string;
   role: "user" | "admin";
-  status: "active" | "suspended" | "closed";
+  status: "pending" | "active" | "suspended" | "closed" | "rejected";
   currency: string;
   region: string;
+  country: string;
+  phone: string;
+  dateOfBirth: string;
+  addressLine: string;
+  city: string;
+  postalCode: string;
   createdAt: string;
   accountCount: number;
   totalCents: number;
   balancesByCurrency?: { currency: string; cents: number }[];
+  applicationAccounts?: { type: string; name: string; currency: string; balanceCents: number }[];
 }
 
 const STATUS_STYLE: Record<string, string> = {
+  pending: "bg-[#fff4d6] text-[#805400]",
   active: "bg-good-soft text-good",
   suspended: "bg-amber-soft text-amber",
   closed: "bg-rose-soft text-rose",
+  rejected: "bg-rose-soft text-rose",
 };
 
 export function AdminUsersClient({ adminId }: { adminId: number }) {
@@ -48,6 +57,7 @@ export function AdminUsersClient({ adminId }: { adminId: number }) {
   const [editing, setEditing] = useState<AdminUser | null>(null);
   const [messaging, setMessaging] = useState<AdminUser | null>(null);
   const [controlUser, setControlUser] = useState<AdminUser | null>(null);
+  const [statusBusy, setStatusBusy] = useState<number | null>(null);
 
   const load = () => {
     setLoadErr(false);
@@ -70,7 +80,9 @@ export function AdminUsersClient({ adminId }: { adminId: number }) {
       (u) =>
         u.name.toLowerCase().includes(needle) ||
         u.email.toLowerCase().includes(needle) ||
-        u.region.toLowerCase().includes(needle),
+        u.region.toLowerCase().includes(needle) ||
+        u.country.toLowerCase().includes(needle) ||
+        u.phone.toLowerCase().includes(needle),
     );
   }, [users, q]);
 
@@ -78,6 +90,7 @@ export function AdminUsersClient({ adminId }: { adminId: number }) {
     const list = users ?? [];
     return {
       total: list.length,
+      pending: list.filter((u) => u.status === "pending").length,
       active: list.filter((u) => u.status === "active").length,
       suspended: list.filter((u) => u.status === "suspended").length,
       admins: list.filter((u) => u.role === "admin").length,
@@ -92,6 +105,20 @@ export function AdminUsersClient({ adminId }: { adminId: number }) {
     });
   };
 
+  const updateStatus = async (user: AdminUser, status: AdminUser["status"]) => {
+    if (status === "rejected" && !window.confirm(`Reject the registration from ${user.name}? They won't be able to sign in.`)) return;
+    setStatusBusy(user.id);
+    try {
+      const res = await apiFetch(`/api/admin/users/${user.id}`, { method: "PATCH", body: JSON.stringify({ status }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? "Couldn't update the registration.");
+      upsert({ ...user, ...data });
+      toast("success", status === "active" ? `${user.name}'s account is approved.` : `${user.name}'s registration was rejected.`);
+    } catch (error) {
+      toast("error", error instanceof Error ? error.message : "Couldn't update the registration.");
+    } finally { setStatusBusy(null); }
+  };
+
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -100,7 +127,7 @@ export function AdminUsersClient({ adminId }: { adminId: number }) {
             Users
           </h1>
           <p className="mt-1 text-sm text-ink-soft">
-            Create users, set account status, region and roles.
+            Review sign-up applications, approve users and manage account settings.
           </p>
         </div>
         <button className="btn-primary" onClick={() => setAddOpen(true)}>
@@ -108,9 +135,10 @@ export function AdminUsersClient({ adminId }: { adminId: number }) {
         </button>
       </div>
 
-      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {[
           ["Total users", stats.total],
+          ["Awaiting approval", stats.pending],
           ["Active", stats.active],
           ["Suspended", stats.suspended],
           ["Admins", stats.admins],
@@ -169,63 +197,45 @@ export function AdminUsersClient({ adminId }: { adminId: number }) {
         ) : (
           <div className="divide-y divide-line-soft">
             {filtered.map((u) => (
-              <div key={u.id} className="flex items-center gap-3 px-4 py-3.5">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-soft font-display text-xs font-semibold text-brand-deep">
-                  {initials(u.name)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="truncate text-sm font-semibold text-ink">
-                      {u.name}
-                    </p>
-                    {u.role === "admin" && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-soft px-2 py-0.5 text-[10px] font-bold text-amber">
-                        <IconShield size={10} /> ADMIN
-                      </span>
-                    )}
+              <div key={u.id} className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
+                <div className="flex min-w-0 items-start gap-3 sm:flex-1">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-soft font-display text-xs font-semibold text-brand-deep">
+                    {initials(u.name)}
                   </div>
-                  <p className="truncate text-xs text-ink-faint">
-                    {u.email} · {u.region} ({u.currency})
-                  </p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate text-sm font-semibold text-ink">{u.name}</p>
+                      {u.role === "admin" && <span className="inline-flex items-center gap-1 rounded-full bg-amber-soft px-2 py-0.5 text-[10px] font-bold text-amber"><IconShield size={10}/>ADMIN</span>}
+                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize ${STATUS_STYLE[u.status]}`}>{u.status === "pending" ? "Awaiting approval" : u.status}</span>
+                    </div>
+                    <p className="mt-1 break-all text-xs text-ink-faint">{u.email} · {u.country} · {u.currency}</p>
+                    <p className="mt-1 text-[10px] text-ink-faint sm:hidden">{u.accountCount} account{u.accountCount === 1 ? "" : "s"} · joined {fmtDate(u.createdAt)}</p>
+                  </div>
+                  <div className="hidden shrink-0 text-right sm:block">
+                    <p className="font-display text-sm font-semibold text-ink">{u.balancesByCurrency?.length ? u.balancesByCurrency.map((b) => money(b.cents, b.currency)).join(" · ") : money(u.totalCents, u.currency)}</p>
+                    <p className="text-[11px] text-ink-faint">{u.accountCount} account{u.accountCount === 1 ? "" : "s"} · joined {fmtDate(u.createdAt)}</p>
+                  </div>
                 </div>
-                <div className="hidden shrink-0 text-right sm:block">
-                  <p className="font-display text-sm font-semibold text-ink">
-                    {u.balancesByCurrency?.length ? u.balancesByCurrency.map((b) => money(b.cents, b.currency)).join(" · ") : money(u.totalCents, u.currency)}
-                  </p>
-                  <p className="text-[11px] text-ink-faint">
-                    {u.accountCount} account{u.accountCount === 1 ? "" : "s"} · joined{" "}
-                    {fmtDate(u.createdAt)}
-                  </p>
-                </div>
-                <span
-                  className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize ${
-                    STATUS_STYLE[u.status]
-                  }`}
-                >
-                  {u.status}
-                </span>
-                <div className="flex shrink-0 gap-1">
-                  <button
-                    onClick={() => setMessaging(u)}
-                    className="rounded-lg p-2 text-ink-faint transition hover:bg-paper hover:text-ink"
-                    aria-label={`Message ${u.name}`}
-                    title="Send message"
-                  >
-                    <IconSend size={15} />
-                  </button>
-                  <button
-                    onClick={() => setControlUser(u)}
-                    className="btn-primary px-3 py-1.5 text-xs bg-brand font-semibold"
-                    title="Impersonate & execute full banking actions on behalf of this user"
-                  >
-                    User Actions
-                  </button>
-                  <button
-                    onClick={() => setEditing(u)}
-                    className="btn-outline px-3 py-1.5 text-xs"
-                  >
-                    Manage
-                  </button>
+
+                {u.status === "pending" && <details className="rounded-xl border border-line-soft bg-paper/70 p-3 text-xs">
+                  <summary className="cursor-pointer font-semibold text-brand">Review application details</summary>
+                  <div className="mt-3 grid gap-3 text-ink-soft sm:grid-cols-2">
+                    <p><span className="block text-[10px] font-semibold uppercase tracking-wide text-ink-faint">Phone</span>{u.phone}</p>
+                    <p><span className="block text-[10px] font-semibold uppercase tracking-wide text-ink-faint">Date of birth</span>{u.dateOfBirth}</p>
+                    <p className="sm:col-span-2"><span className="block text-[10px] font-semibold uppercase tracking-wide text-ink-faint">Address</span>{u.addressLine}, {u.city}, {u.postalCode}, {u.country}</p>
+                    <div className="sm:col-span-2"><span className="block text-[10px] font-semibold uppercase tracking-wide text-ink-faint">Requested account</span>{u.applicationAccounts?.length ? u.applicationAccounts.map((account, index) => <p key={`${account.name}-${index}`} className="mt-1">{account.name} · {account.type.replaceAll("_", " ")} · {account.currency} · initial balance {money(account.balanceCents, account.currency)}</p>) : <p className="mt-1">No account details available.</p>}</div>
+                  </div>
+                </details>}
+
+                <div className="flex flex-wrap gap-2 sm:shrink-0">
+                  {u.status === "pending" ? <>
+                    <button onClick={() => updateStatus(u, "active")} disabled={statusBusy === u.id} className="btn-primary min-w-24 flex-1 px-3 py-2 text-xs sm:flex-none">{statusBusy === u.id ? <IconSpinner size={14}/> : "Approve"}</button>
+                    <button onClick={() => updateStatus(u, "rejected")} disabled={statusBusy === u.id} className="btn-outline min-w-24 flex-1 border-rose/30 px-3 py-2 text-xs text-rose hover:bg-rose-soft sm:flex-none">Reject</button>
+                  </> : <>
+                    {u.status !== "rejected" && <button onClick={() => setMessaging(u)} className="btn-outline flex-1 px-3 py-2 text-xs sm:flex-none" aria-label={`Message ${u.name}`} title="Send message"><IconSend size={14}/>Message</button>}
+                    {u.status !== "rejected" && <button onClick={() => setControlUser(u)} className="btn-primary flex-1 px-3 py-2 text-xs sm:flex-none" title="Open administrative user actions">User actions</button>}
+                    <button onClick={() => setEditing(u)} className="btn-outline flex-1 px-3 py-2 text-xs sm:flex-none">Manage</button>
+                  </>}
                 </div>
               </div>
             ))}
@@ -434,16 +444,18 @@ function ManageUserModal({
       <div className="space-y-4">
         <Field
           label="Account status"
-          hint="Suspended users can sign in but can't transact. Closed users are signed out and blocked."
+          hint="Pending users cannot sign in until approved. Rejected and closed users are signed out and blocked."
         >
           <Select
             value={status}
             onChange={(e) => setStatus(e.target.value as AdminUser["status"])}
             disabled={isSelf}
           >
+            <option value="pending">Pending approval</option>
             <option value="active">Active</option>
             <option value="suspended">Suspended</option>
             <option value="closed">Closed</option>
+            <option value="rejected">Rejected</option>
           </Select>
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">

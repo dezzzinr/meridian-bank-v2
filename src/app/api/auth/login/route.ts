@@ -19,6 +19,12 @@ export async function POST(req: Request) {
   if (!user || !verifyPassword(password, user.passwordHash)) {
     return apiError(401, "Incorrect email or password.");
   }
+  if (user.status === "pending") {
+    return apiError(403, "Your registration is waiting for administrator approval.");
+  }
+  if (user.status === "rejected") {
+    return apiError(403, "Your registration was not approved. Please contact support.");
+  }
   if (user.status === "closed") {
     return apiError(
       403,

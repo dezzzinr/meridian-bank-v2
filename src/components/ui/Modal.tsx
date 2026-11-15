@@ -33,8 +33,8 @@ export function Modal({ open, onClose, title, subtitle, children, maxW = "max-w-
   return <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-4">
     <div className="animate-fade absolute inset-0 bg-ink/45 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
     <div ref={panel} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} className={`animate-rise relative flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-2xl border border-line bg-card shadow-2xl shadow-ink/20 outline-none sm:rounded-2xl ${maxW}`}>
-      <div className="flex items-start justify-between gap-4 border-b border-line-soft px-5 py-4"><div><h2 id={titleId} className="font-display text-lg font-semibold tracking-tight text-ink">{title}</h2>{subtitle && <p className="mt-0.5 text-[13px] text-ink-soft">{subtitle}</p>}</div><button onClick={onClose} className="rounded-lg p-1.5 text-ink-faint transition hover:bg-paper hover:text-ink" aria-label="Close dialog"><IconX size={18} /></button></div>
-      <div className="overflow-y-auto px-5 py-4">{children}</div>
+      <div className="flex items-start justify-between gap-3 border-b border-line-soft px-4 py-4 sm:gap-4 sm:px-5"><div className="min-w-0 flex-1"><h2 id={titleId} className="break-words font-display text-lg font-semibold tracking-tight text-ink">{title}</h2>{subtitle && <p className="mt-0.5 break-words text-[13px] text-ink-soft">{subtitle}</p>}</div><button onClick={onClose} className="shrink-0 rounded-lg p-1.5 text-ink-faint transition hover:bg-paper hover:text-ink" aria-label="Close dialog"><IconX size={18} /></button></div>
+      <div className="overflow-y-auto px-4 py-4 sm:px-5">{children}</div>
     </div>
   </div>;
 }

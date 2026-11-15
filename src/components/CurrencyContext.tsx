@@ -3,7 +3,7 @@ import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { money as fmtMoney, moneySigned as fmtMoneySigned } from "@/lib/format";
 export interface CurrentUser {
   id: number; name: string; email: string; role: "user" | "admin";
-  status: "active" | "suspended" | "closed"; currency: string; region: string; createdAt: string;
+  status: "pending" | "active" | "suspended" | "closed" | "rejected"; currency: string; region: string; createdAt: string;
   avatarUrl?: string | null;
   accountLocked?: boolean;
   twoFactorEnabled?: boolean;

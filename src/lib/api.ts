@@ -26,7 +26,7 @@ export async function requireAdmin(): Promise<SessionUser | null> {
 
 /**
  * For actions that move money or change data: only "active" users may
- * proceed. Suspended/closed users are blocked with a clear message.
+ * proceed. Suspended, pending, rejected and closed users are blocked.
  */
 export function assertActive(
   user: SessionUser,
@@ -39,6 +39,8 @@ export function assertActive(
         "Your account is suspended. Please contact support before making transactions.",
     };
   }
+  if (user.status === "pending") return { ok: false, message: "Your registration is awaiting administrator approval." };
+  if (user.status === "rejected") return { ok: false, message: "Your registration was not approved. Please contact support." };
   return {
     ok: false,
     message: "Your account is closed and can no longer make transactions.",

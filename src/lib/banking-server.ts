@@ -8,7 +8,7 @@ import { apiFailure } from "./api-failure";
 export type DBTransaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 export async function bankingUser(write = false) {
   const user = await getSessionUser();
-  if (!user || user.status === "closed") throw new HttpError(401, "Please sign in again.");
+  if (!user || ["pending", "closed", "rejected"].includes(user.status)) throw new HttpError(401, "Please sign in again.");
   if (write && user.status !== "active") throw new HttpError(403, "Your account is suspended. An administrator must reactivate it before you make changes.");
   return user;
 }

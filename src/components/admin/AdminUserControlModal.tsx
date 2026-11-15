@@ -290,7 +290,7 @@ export function AdminUserControlModal({
     >
       <div className="space-y-4">
         {/* Navigation Tabs */}
-        <div className="flex flex-wrap gap-1 border-b border-line pb-2">
+        <div className="-mx-5 flex w-max min-w-full flex-nowrap gap-1 overflow-x-auto border-b border-line px-5 pb-2">
           {[
             ["overview", "Overview & Accounts"],
             ["add_tx", "Post Transaction (Custom Date)"],
@@ -305,7 +305,7 @@ export function AdminUserControlModal({
                 setError("");
                 setActiveTab(tabKey as any);
               }}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+              className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
                 activeTab === tabKey
                   ? "bg-brand text-white shadow-sm"
                   : "text-ink-soft hover:bg-paper hover:text-ink"
@@ -590,7 +590,7 @@ export function AdminUserControlModal({
                   </Field>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                   <Field label="Expiry Month">
                     <Select value={cardExpiryMonth} onChange={(e) => setCardExpiryMonth(e.target.value)} className="text-xs font-mono">
                       {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0")).map((m) => (
@@ -619,7 +619,7 @@ export function AdminUserControlModal({
                   </Field>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <Field label="Daily Limit ($ / Currency)">
                     <Input
                       value={cardDailyLimit}

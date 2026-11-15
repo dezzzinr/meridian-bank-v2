@@ -13,7 +13,7 @@ export interface SessionUser {
   name: string;
   email: string;
   role: "user" | "admin";
-  status: "active" | "suspended" | "closed";
+  status: "pending" | "active" | "suspended" | "closed" | "rejected";
   currency: string;
   region: string;
   avatarUrl?: string | null;
@@ -90,6 +90,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     .where(and(eq(sessions.token, token), gt(sessions.expiresAt, new Date())));
   if (rows.length === 0) return null;
   const r = rows[0];
+  if (r.status === "pending" || r.status === "rejected") return null;
   return {
     id: r.id,
     name: r.name,

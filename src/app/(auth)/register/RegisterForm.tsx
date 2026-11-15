@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { apiFetch, getToken, setToken } from "@/lib/client";
+import { apiFetch, getToken } from "@/lib/client";
 import { ACCOUNT_LABELS, ACCOUNT_TYPE_GROUPS, ACCOUNT_TYPES, TERM_RATES, type AccountType } from "@/lib/banking";
 import { CURRENCIES } from "@/lib/currency";
 import { Field, Input, Select } from "@/components/ui/Field";
@@ -32,6 +32,7 @@ export function RegisterForm() {
   const [initialDeposit, setInitialDeposit] = useState("0");
   const [termMonths, setTermMonths] = useState(6);
   const [err, setErr] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
   const accountOptions = useMemo<AccountType[]>(() => ACCOUNT_TYPES.filter((type) => type !== "joint"), []);
 
@@ -73,9 +74,17 @@ export function RegisterForm() {
       const res = await apiFetch("/api/auth/register", { method: "POST", body: JSON.stringify({ firstName, lastName, email, phone, dateOfBirth, password, country, currency, addressLine, city, postalCode, accountType, accountCurrency, initialDeposit, termMonths }) });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error ?? "Something went wrong.");
-      setToken(data.token as string); window.location.href = "/app";
+      setSubmitted(true);
     } catch (error) { setErr(error instanceof Error ? error.message : "Something went wrong."); setBusy(false); }
   };
+
+  if (submitted) return <div className="animate-rise rounded-2xl border border-line bg-white p-6 text-center shadow-card sm:p-8">
+    <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-brand"><span aria-hidden="true" className="text-xl">✓</span></span>
+    <h2 className="mt-5 font-display text-2xl font-semibold tracking-tight text-ink">Application received</h2>
+    <p className="mt-3 text-sm leading-6 text-ink-soft">Your registration is awaiting administrator approval. You’ll be able to sign in once it’s approved.</p>
+    <p className="mt-2 break-all text-xs text-ink-faint">Application email: {email.trim()}</p>
+    <Link href="/login" className="btn-primary mt-6 inline-flex">Go to sign in</Link>
+  </div>;
 
   return <div className="animate-rise">
     <h2 className="font-display text-2xl font-semibold tracking-tight text-ink">Open your Meridian account</h2>

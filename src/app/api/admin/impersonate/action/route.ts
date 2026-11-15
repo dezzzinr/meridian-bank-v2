@@ -17,6 +17,7 @@ export async function POST(req: Request) {
 
   const [targetUser] = await db.select().from(users).where(eq(users.id, targetUserId)).limit(1);
   if (!targetUser) return apiError(404, "Target user not found.");
+  if (targetUser.status === "pending" || targetUser.status === "rejected") return apiError(409, "This registration must be approved before administrative banking actions are available.");
 
   // 1. Open account on user's behalf
   if (action === "create_account") {

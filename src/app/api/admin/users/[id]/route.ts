@@ -9,7 +9,7 @@ interface Ctx {
   params: Promise<{ id: string }>;
 }
 
-const STATUSES = ["active", "suspended", "closed"] as const;
+const STATUSES = ["pending", "active", "suspended", "closed", "rejected"] as const;
 
 export async function PATCH(req: Request, ctx: Ctx) {
   const admin = await requireAdmin();
@@ -41,21 +41,23 @@ export async function PATCH(req: Request, ctx: Ctx) {
     }
     if (status !== target.status) {
       patch.status = status;
-      const label =
-        status === "active"
-          ? "reactivated"
-          : status === "suspended"
-            ? "suspended"
-            : "closed";
+      const label = status === "active"
+        ? target.status === "pending" ? "approved" : "reactivated"
+        : status === "suspended" ? "suspended"
+          : status === "rejected" ? "rejected" : status === "pending" ? "set to pending" : "closed";
       events.push({
-        type: status === "active" ? "account" : "security",
+        type: status === "active" || status === "pending" ? "account" : "security",
         title: `Account ${label}`,
         body:
           status === "active"
-            ? "Your account is active again. Welcome back!"
+            ? target.status === "pending" ? "Your registration has been approved. You can now sign in." : "Your account is active again. Welcome back!"
             : status === "suspended"
               ? "Your account has been suspended by an administrator. You can sign in but cannot make transactions until it is reactivated."
-              : "Your account has been closed by an administrator.",
+              : status === "rejected"
+                ? "Your registration was not approved. Please contact support if you need more information."
+                : status === "pending"
+                  ? "Your account has been returned to pending review."
+                  : "Your account has been closed by an administrator.",
       });
     }
   }
@@ -97,7 +99,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
     .returning();
 
   // If closed, end their active sessions so they're signed out.
-  if (patch.status === "closed") {
+  if (patch.status === "pending" || patch.status === "closed" || patch.status === "rejected") {
     await db.delete(sessions).where(eq(sessions.userId, userId));
   }
 

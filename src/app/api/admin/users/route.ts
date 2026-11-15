@@ -1,4 +1,4 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { accounts, users } from "@/db/schema";
 import { apiError, readBody, requireAdmin, str } from "@/lib/api";
@@ -10,12 +10,26 @@ export async function GET() {
   const admin = await requireAdmin();
   if (!admin) return apiError(403, "Admins only.");
 
-  const rows = await db.select({ id: users.id, name: users.name, email: users.email, role: users.role, status: users.status, currency: users.currency, region: users.region, createdAt: users.createdAt }).from(users).orderBy(desc(users.createdAt));
+  const rows = await db.select({ id: users.id, name: users.name, email: users.email, role: users.role, status: users.status, currency: users.currency, region: users.region, country: users.country, phone: users.phone, dateOfBirth: users.dateOfBirth, addressLine: users.addressLine, city: users.city, postalCode: users.postalCode, createdAt: users.createdAt }).from(users).orderBy(desc(users.createdAt));
   const balances = await db.select({ userId: accounts.userId, currency: accounts.currency, cents: sql<string>`coalesce(sum(${accounts.balanceCents}),0)`, count: sql<number>`count(*)::int` }).from(accounts).groupBy(accounts.userId, accounts.currency);
+  const applicationAccounts = await db.select({ userId: accounts.userId, type: accounts.type, name: accounts.name, currency: accounts.currency, balanceCents: accounts.balanceCents }).from(accounts).where(isNull(accounts.closedAt)).orderBy(accounts.createdAt);
   return Response.json({
     users: rows.map((u) => {
       const owned = balances.filter((b) => b.userId === u.id);
-      return { ...u, createdAt: u.createdAt.toISOString(), accountCount: owned.reduce((sum, b) => sum + b.count, 0), totalCents: Number(owned.find((b) => b.currency === u.currency)?.cents ?? 0), balancesByCurrency: owned.map((b) => ({ currency: b.currency, cents: Number(b.cents) })) };
+      const isPending = u.status === "pending";
+      return {
+        ...u,
+        phone: isPending ? u.phone : "",
+        dateOfBirth: isPending ? u.dateOfBirth : "",
+        addressLine: isPending ? u.addressLine : "",
+        city: isPending ? u.city : "",
+        postalCode: isPending ? u.postalCode : "",
+        createdAt: u.createdAt.toISOString(),
+        accountCount: owned.reduce((sum, b) => sum + b.count, 0),
+        totalCents: Number(owned.find((b) => b.currency === u.currency)?.cents ?? 0),
+        balancesByCurrency: owned.map((b) => ({ currency: b.currency, cents: Number(b.cents) })),
+        applicationAccounts: isPending ? applicationAccounts.filter((a) => a.userId === u.id).map(({ userId: _userId, ...account }) => ({ ...account, balanceCents: Number(account.balanceCents) })) : [],
+      };
     }),
   });
 }
