@@ -19,7 +19,7 @@ export const ACCOUNT_DESCRIPTIONS: Record<AccountType, string> = {
   business_savings: "Keep business reserves separate from everyday operating funds.",
   merchant: "A demo settlement account for simulated card and electronic sales.",
   corporate: "Keep company funds organized in a dedicated business account.",
-  trust: "A demo account category for funds managed on behalf of beneficiaries.",
+  trust: "An account category for funds managed on behalf of beneficiaries.",
   escrow: "A demo holding account for funds awaiting an agreed next step.",
   retirement: "Set aside funds for long-term retirement saving goals.",
   money_market: "A flexible savings category; any interest is illustrative and not automatically credited.",

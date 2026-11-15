@@ -36,9 +36,21 @@ export function PublicHeader() {
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-3.5 sm:px-8">
         <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="Meridian home"><LogoMark size={32}/><span className="font-display text-xl font-semibold tracking-tight">Meridian</span></Link>
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Main navigation"><NavGroup label="Banking" items={productLinks}/><NavGroup label="Discover" items={discoverLinks}/><Link href="/about" className="rounded-lg px-3 py-2 text-sm font-semibold text-white/75 hover:text-white">About</Link><Link href="/help" className="rounded-lg px-3 py-2 text-sm font-semibold text-white/75 hover:text-white">Help</Link></nav>
-        <div className="flex shrink-0 items-center gap-1 sm:gap-3"><span className="hidden md:inline-flex"><LanguageSwitcher/></span><Link href="/login" className="rounded-lg px-3 py-2 text-sm font-semibold text-white/80 transition hover:text-white">Log in</Link><Link href="/register" className="inline-flex items-center gap-2 rounded-lg bg-[#c8e4d1] px-4 py-2.5 text-sm font-bold text-[#163d30] transition hover:bg-white">Get started<ArrowIcon className="h-4 w-4"/></Link></div>
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3"><span className="hidden md:inline-flex"><LanguageSwitcher/></span><div className="hidden items-center gap-1 sm:flex"><Link href="/login" className="rounded-lg px-3 py-2 text-sm font-semibold text-white/80 transition hover:text-white">Log in</Link><Link href="/register" className="inline-flex items-center gap-2 rounded-lg bg-[#c8e4d1] px-4 py-2.5 text-sm font-bold text-[#163d30] transition hover:bg-white">Get started<ArrowIcon className="h-4 w-4"/></Link></div><details className="group relative lg:hidden">
+          <summary aria-label="Open navigation menu" className="grid h-10 w-10 cursor-pointer list-none place-items-center rounded-lg text-white/80 transition hover:bg-white/10 hover:text-white [&::-webkit-details-marker]:hidden">
+            <svg className="group-open:hidden" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+            <svg className="hidden group-open:block" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+          </summary>
+          <nav aria-label="Mobile navigation" className="absolute right-0 top-full z-50 mt-3 max-h-[calc(100dvh-5rem)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto rounded-2xl border border-line bg-card p-3 text-ink shadow-2xl">
+            <p className="px-3 pb-2 pt-1 text-[10px] font-bold uppercase tracking-[.16em] text-ink-faint">Banking</p>
+            {productLinks.map(({ label, href, icon: Icon }) => <Link key={label} href={href} className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition hover:bg-paper"><Icon size={17}/>{label}</Link>)}
+            <p className="px-3 pb-2 pt-4 text-[10px] font-bold uppercase tracking-[.16em] text-ink-faint">Discover</p>
+            {discoverLinks.map(({ label, href, icon: Icon }) => <Link key={label} href={href} className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition hover:bg-paper"><Icon size={17}/>{label}</Link>)}
+            <div className="mt-2 flex items-center justify-between border-t border-line-soft px-3 pt-3"><Link href="/about" className="py-2 text-sm font-semibold">About</Link><Link href="/help" className="py-2 text-sm font-semibold">Help</Link><LanguageSwitcher variant="light"/></div>
+            <div className="mt-3 grid grid-cols-2 gap-2 border-t border-line-soft pt-3"><Link href="/login" className="rounded-lg border border-line px-3 py-2.5 text-center text-sm font-semibold">Log in</Link><Link href="/register" className="rounded-lg bg-brand px-3 py-2.5 text-center text-sm font-bold text-white">Get started</Link></div>
+          </nav>
+        </details></div>
       </div>
-      <nav className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-5 pb-3 lg:hidden sm:px-8" aria-label="Explore Meridian">{[...productLinks, ...discoverLinks].map(({ label, href, icon: Icon }) => <Link key={label} href={href} className="inline-flex shrink-0 items-center gap-2 rounded-full border border-white/10 px-3 py-2 text-xs font-semibold text-white/75"><Icon size={14}/>{label}</Link>)}<span className="md:hidden"><LanguageSwitcher/></span></nav>
     </header>
   );
 }

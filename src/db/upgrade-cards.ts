@@ -4,6 +4,12 @@ import type { DBTransaction } from "@/lib/banking-server";
 /** Additive migration: no resets, deletes, relabeling of existing currencies, or balance changes. */
 export async function applyCardsUpgrade(tx: DBTransaction) {
   await tx.execute(sql`
+    ALTER TABLE public.users ADD COLUMN IF NOT EXISTS country text NOT NULL DEFAULT 'United States';
+    ALTER TABLE public.users ADD COLUMN IF NOT EXISTS phone text NOT NULL DEFAULT '';
+    ALTER TABLE public.users ADD COLUMN IF NOT EXISTS date_of_birth text NOT NULL DEFAULT '';
+    ALTER TABLE public.users ADD COLUMN IF NOT EXISTS address_line text NOT NULL DEFAULT '';
+    ALTER TABLE public.users ADD COLUMN IF NOT EXISTS city text NOT NULL DEFAULT '';
+    ALTER TABLE public.users ADD COLUMN IF NOT EXISTS postal_code text NOT NULL DEFAULT '';
     ALTER TABLE public.accounts ADD COLUMN IF NOT EXISTS currency text;
     UPDATE public.accounts a SET currency = u.currency FROM public.users u
       WHERE a.user_id = u.id AND (a.currency IS NULL OR a.currency = '');

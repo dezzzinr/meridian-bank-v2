@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   const rows = await db.select().from(users).where(eq(users.email, email)).limit(1);
   const user = rows[0];
   if (!user || !verifyPassword(password, user.passwordHash)) {
-    return apiError(401, "Incorrect email or password. Try the demo account below.");
+    return apiError(401, "Incorrect email or password.");
   }
   if (user.status === "closed") {
     return apiError(

@@ -30,6 +30,12 @@ export const users = pgTable("users", {
     .default("active"),
   currency: text("currency").notNull().default("USD"),
   region: text("region").notNull().default("United States"),
+  country: text("country").notNull().default("United States"),
+  phone: text("phone").notNull().default(""),
+  dateOfBirth: text("date_of_birth").notNull().default(""),
+  addressLine: text("address_line").notNull().default(""),
+  city: text("city").notNull().default(""),
+  postalCode: text("postal_code").notNull().default(""),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
