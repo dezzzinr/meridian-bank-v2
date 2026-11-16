@@ -268,6 +268,13 @@ export const transfers = pgTable(
         "to_payee",
         "international",
         "bill_payment",
+        "person",
+        "external_bank",
+        "wire",
+        "cashapp",
+        "zelle",
+        "paypal",
+        "crypto",
       ],
     })
       .notNull()
@@ -275,6 +282,7 @@ export const transfers = pgTable(
     referenceNumber: text("reference_number").notNull().unique(),
     recipientName: text("recipient_name"),
     recipientBank: text("recipient_bank"),
+    routingNumber: text("routing_number"),
     recipientAccountNo: text("recipient_account_no"),
     swiftCode: text("swift_code"),
     destinationCurrency: text("destination_currency"),

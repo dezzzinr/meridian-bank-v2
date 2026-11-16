@@ -35,7 +35,7 @@ Only after confirming the check points to the intended, existing Meridian databa
 4. Run `npx tsx scripts/check-db.ts` again. Expect `Schema check: OK`.
 5. Run `npm run dev` and reopen http://localhost:3000/app/payments.
 
-The upgrade is additive, transactional and repeatable. It fills blank account numbers and transfer references **before** adding unique constraints. It creates referenced tables before adding foreign keys. It does not require pgcrypto, delete users, reset balances, clear transactions, or change user statuses/roles. Existing populated identifiers are preserved. Duplicate non-empty identifiers cause the upgrade to stop for manual review.
+The upgrade is additive, transactional and repeatable. It fills blank account numbers and transfer references **before** adding unique constraints. It creates referenced tables before adding foreign keys. It also adds the `routing_number` field used by the person transfer form. It does not require pgcrypto, delete users, reset balances, clear transactions, or change user statuses/roles. Existing populated identifiers are preserved. Duplicate non-empty identifiers cause the upgrade to stop for manual review.
 
 **Do not run `scripts/seed.ts` as a repair. That script deletes existing users and banking data.** Do not rerun the earlier SQL that created unique indexes on identical empty strings.
 

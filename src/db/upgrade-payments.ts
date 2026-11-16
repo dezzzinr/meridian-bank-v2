@@ -67,6 +67,7 @@ export async function upgradePaymentsDatabase() {
       ALTER TABLE public.transfers ADD COLUMN IF NOT EXISTS beneficiary_id integer;
       ALTER TABLE public.transfers ADD COLUMN IF NOT EXISTS recipient_name text;
       ALTER TABLE public.transfers ADD COLUMN IF NOT EXISTS recipient_bank text;
+      ALTER TABLE public.transfers ADD COLUMN IF NOT EXISTS routing_number text;
       ALTER TABLE public.transfers ADD COLUMN IF NOT EXISTS recipient_account_no text;
       ALTER TABLE public.transfers ADD COLUMN IF NOT EXISTS swift_code text;
       ALTER TABLE public.transfers ADD COLUMN IF NOT EXISTS destination_currency text;
@@ -74,10 +75,10 @@ export async function upgradePaymentsDatabase() {
       ALTER TABLE public.transfers ADD COLUMN IF NOT EXISTS scheduled_for timestamptz;
       ALTER TABLE public.transfers ADD COLUMN IF NOT EXISTS completed_at timestamptz;
 
-      -- Deterministic, unique demo identifiers; not real bank-issued IBANs.
+      -- Deterministic 10-digit numeric demo account numbers for blank legacy rows.
       -- Fill existing rows BEFORE creating unique constraints.
       UPDATE public.accounts
-      SET account_number = 'MR-LEGACY-' || id::text
+      SET account_number = (2000000000::bigint + id)::text
       WHERE account_number IS NULL OR btrim(account_number) = '';
       UPDATE public.transfers
       SET reference_number = 'MERD-LEGACY-' || id::text

@@ -61,6 +61,7 @@ export async function POST(req: Request) {
       let destAccount: typeof accounts.$inferSelect | null = null;
       let payeeRow: typeof payees.$inferSelect | null = null;
       let recipientLabel = "";
+      let recipientDetails: { name: string; bank: string | null; routingNumber: string | null; accountNo: string; swiftCode: string | null } | null = null;
       let transferType = "internal";
       let status: "completed" | "pending" = "pending";
 
@@ -88,29 +89,53 @@ export async function POST(req: Request) {
         if (!p) throw new HttpError(404, "Selected payee not found.");
         payeeRow = p;
         recipientLabel = p.name;
-        transferType = "to_payee";
+        transferType = body.transferChannel === "person" ? "person" : "to_payee";
         status = "pending";
+        if (body.transferChannel === "person") {
+          const bank = str(body.recipientBank, 2, 70);
+          const routingNumber = str(body.routingNumber, 9, 9);
+          const accountNo = str(body.recipientAccountNo, 4, 120);
+          if (!bank) throw new HttpError(400, "Recipient bank name is required.");
+          if (!routingNumber || !/^\d{9}$/.test(routingNumber)) throw new HttpError(400, "Enter a valid 9-digit routing number.");
+          if (!accountNo) throw new HttpError(400, "Recipient account number is required.");
+          if (!note?.trim()) throw new HttpError(400, "A reference is required for a person transfer.");
+          recipientLabel = `${p.name} (${accountNo})`;
+          recipientDetails = { name: p.name, bank, routingNumber, accountNo, swiftCode: null };
+        }
       } else if (kind === "new_recipient") {
         // Direct transfer to new recipient without requiring prior saved payee
         const recipientName = str(body.recipientName, 2, 70);
-        const recipientAccountNo = str(body.recipientAccountNo, 4, 34);
-        const recipientBank = str(body.recipientBank, 2, 70) || "Direct Bank Transfer";
+        const recipientAccountNo = str(body.recipientAccountNo, 4, 120);
+        const channel = String(body.transferChannel ?? "external_bank");
+        const recipientBankInput = str(body.recipientBank, 2, 70);
+        const recipientBank = recipientBankInput || (["external_bank", "wire", "international"].includes(channel) ? "External Bank" : null);
+        const recipientCountry = str(body.recipientCountry, 2, 70);
+        const swiftCode = str(body.swiftCode, 8, 11);
+        const routingNumber = str(body.routingNumber, 9, 9);
+        const validChannels = ["person", "external_bank", "wire", "international", "cashapp", "zelle", "paypal", "crypto"];
         const saveAsPayee = Boolean(body.saveAsPayee);
 
+        if (!validChannels.includes(channel)) throw new HttpError(400, "Choose a supported transfer type.");
         if (!recipientName) throw new HttpError(400, "Recipient name is required (2-70 characters).");
-        if (!recipientAccountNo) throw new HttpError(400, "Recipient account number or IBAN is required.");
+        if (!recipientAccountNo) throw new HttpError(400, "Recipient account or payment identifier is required.");
+        if (channel === "person" && !recipientBank) throw new HttpError(400, "Recipient bank name is required.");
+        if (channel === "person" && (!routingNumber || !/^\d{9}$/.test(routingNumber))) throw new HttpError(400, "Enter a valid 9-digit routing number.");
+        if (channel === "person" && !note?.trim()) throw new HttpError(400, "A reference is required for a person transfer.");
+        if (channel === "international" && !recipientCountry) throw new HttpError(400, "Recipient country is required for an international transfer.");
+        if (channel === "wire" && !swiftCode) throw new HttpError(400, "A valid SWIFT/BIC code is required for a wire transfer.");
 
         recipientLabel = `${recipientName} (${recipientAccountNo})`;
-        transferType = "to_payee";
+        transferType = channel;
         status = "pending";
+        recipientDetails = { name: recipientName, bank: recipientBank ? `${recipientBank}${recipientCountry ? ` · ${recipientCountry}` : ""}` : null, routingNumber, accountNo: recipientAccountNo, swiftCode };
 
-        if (saveAsPayee) {
+        if (saveAsPayee && ["external_bank", "wire", "international"].includes(channel)) {
           const [newP] = await tx.insert(payees).values({
             userId: user.id,
             name: recipientName,
-            methodType: "bank",
-            methodDetail: `${recipientBank} - ${recipientAccountNo}`,
-            notes: "Created during direct transfer",
+            methodType: channel === "person" ? (recipientAccountNo.includes("@") ? "email" : "mobile") : "bank",
+            methodDetail: channel === "person" ? recipientAccountNo : `${recipientBank || "Bank transfer"}${swiftCode ? ` · ${swiftCode}` : ""} - ${recipientAccountNo}`,
+            notes: channel === "international" && recipientCountry ? `International · ${recipientCountry}` : "Created during direct transfer",
           }).returning();
           payeeRow = newP;
         }
@@ -126,6 +151,11 @@ export async function POST(req: Request) {
         payeeId: payeeRow?.id,
         transferType: transferType as any,
         referenceNumber: generateRefNumber(),
+        recipientName: recipientDetails?.name,
+        recipientBank: recipientDetails?.bank,
+        routingNumber: recipientDetails?.routingNumber,
+        recipientAccountNo: recipientDetails?.accountNo,
+        swiftCode: recipientDetails?.swiftCode,
         amountCents: amount,
         note,
         status,

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Manrope, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/components/i18n/LanguageProvider";
+import { SmartsuppWidget } from "@/components/SmartsuppWidget";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -58,7 +59,10 @@ export default function RootLayout({
         className={`${manrope.variable} ${grotesk.variable} bg-paper font-sans text-ink antialiased`}
         suppressHydrationWarning
       >
-        <LanguageProvider>{children}</LanguageProvider>
+        <LanguageProvider>
+          {children}
+          <SmartsuppWidget />
+        </LanguageProvider>
       </body>
     </html>
   );

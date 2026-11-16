@@ -20,6 +20,13 @@ function requestError(error: unknown): ApiRequestError {
     : new ApiRequestError("An unexpected error occurred. Please try again.");
 }
 
+const TRANSFER_LABELS: Record<string, string> = {
+  internal: "Between accounts", to_account: "Between accounts", person: "To a person",
+  to_payee: "External bank", external_bank: "External bank", wire: "Wire transfer",
+  international: "International bank", cashapp: "Cash App", zelle: "Zelle",
+  paypal: "PayPal", crypto: "Cryptocurrency", bill_payment: "Bill payment",
+};
+
 function LoadError({
   title, error, retry, loading,
 }: {
@@ -142,7 +149,7 @@ export function PaymentsClient() {
       <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-brand/20 bg-brand-soft/60 px-4 py-3">
         <IconInfo size={16} className="mt-0.5 shrink-0 text-brand-deep" />
         <p className="text-[13px] leading-relaxed text-brand-deep">
-          Transfers between your own accounts are instant. Payments to external payees process as <span className="font-semibold">pending</span> and settle within minutes — you can cancel a pending payment while your account is active.
+          Transfers between your own accounts update instantly in this demo. External routes (including bank, wallet, and payment apps) are recorded as simulated pending activity only; they are not sent to those providers. You can cancel pending demo activity while your account is active.
         </p>
       </div>
 
@@ -178,6 +185,7 @@ export function PaymentsClient() {
             <div className="divide-y divide-line-soft">
               {items.map((transfer) => {
                 const dest = transfer.destinationAccountName ?? transfer.payeeName ?? "Removed payee";
+                const route = TRANSFER_LABELS[transfer.transferType] ?? "Payment";
                 return (
                   <div key={transfer.id} className="flex items-center gap-3 px-4 py-3.5">
                     <Avatar name={dest} />
@@ -186,7 +194,7 @@ export function PaymentsClient() {
                         {transfer.destinationAccountName ? `To ${dest}` : dest}
                       </p>
                       <p className="truncate text-xs text-ink-faint">
-                        From {transfer.sourceAccountName} · {dayLabel(transfer.createdAt)}{transfer.note ? ` · “${transfer.note}”` : ""}
+                        From {transfer.sourceAccountName} · {route} · {dayLabel(transfer.createdAt)}{transfer.note ? ` · “${transfer.note}”` : ""}
                       </p>
                       {transfer.referenceNumber && <p className="mt-1 truncate font-mono text-[10px] text-ink-faint">{transfer.referenceNumber}</p>}
                     </div>

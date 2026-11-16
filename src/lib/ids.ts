@@ -1,14 +1,8 @@
-import { randomBytes } from "crypto";
+import { randomBytes, randomInt } from "crypto";
 
-/** Generate a fake IBAN-like account number: MR + 2 check digits + 23 digits. */
+/** Generate a 10-digit numeric demo account number. */
 export function generateAccountNumber(): string {
-  const bank = "0001";
-  const branch = "0001";
-  const account = randomBytes(6).toString("hex").slice(0, 12).toUpperCase();
-  const body = bank + branch + account;
-  const check = String(body.length % 97)
-    .padStart(2, "0");
-  return "MR" + check + body;
+  return String(randomInt(1_000_000_000, 10_000_000_000));
 }
 
 /** Generate a human-readable transfer reference: MERD-XXXXXXXX */

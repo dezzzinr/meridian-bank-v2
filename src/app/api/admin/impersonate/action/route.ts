@@ -44,7 +44,7 @@ export async function POST(req: Request) {
       userId: targetUserId,
       type: "account",
       title: "Account Opened by Administration",
-      body: `${name} (${currency}) has been opened for you by an administrator. IBAN: ${number}.`,
+      body: `${name} (${currency}) has been opened for you by an administrator. Account number: ${number}.`,
       createdBy: admin.id,
     });
 

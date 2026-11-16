@@ -502,7 +502,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ---- Accounts with IBAN ---- */}
+          {/* ---- Account numbers ---- */}
           <div className="mt-4">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="font-display text-lg font-semibold tracking-tight text-ink">Your accounts</h2>
