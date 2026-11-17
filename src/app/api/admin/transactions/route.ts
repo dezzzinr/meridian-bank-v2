@@ -5,6 +5,7 @@ import { apiError, readBody, requireAdmin, str } from "@/lib/api";
 import { positiveId } from "@/lib/banking-server";
 import { parseAmount } from "@/lib/banking";
 import { money } from "@/lib/format";
+import { emailUserNotification } from "@/lib/email";
 
 export async function POST(req: Request) {
   const admin = await requireAdmin();
@@ -94,6 +95,8 @@ export async function POST(req: Request) {
 
     return txRow;
   });
+
+  await emailUserNotification(userId, "Account activity posted", "A transaction was posted to your account by bank operations. Sign in to review the details.", `admin-transaction-${result.id}`);
 
   return Response.json({
     ok: true,

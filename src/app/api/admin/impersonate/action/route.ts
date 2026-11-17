@@ -6,6 +6,7 @@ import { positiveId } from "@/lib/banking-server";
 import { ACCOUNT_TYPES, TERM_RATES, termMaturity, type AccountType, parseAmount } from "@/lib/banking";
 import { generateAccountNumber } from "@/lib/ids";
 import { hashPassword } from "@/lib/password";
+import { emailUserNotification } from "@/lib/email";
 
 export async function POST(req: Request) {
   const admin = await requireAdmin();
@@ -47,6 +48,7 @@ export async function POST(req: Request) {
       body: `${name} (${currency}) has been opened for you by an administrator. Account number: ${number}.`,
       createdBy: admin.id,
     });
+    await emailUserNotification(targetUserId, "Account opened by administration", `A ${currency} account was opened for you. Sign in to review your accounts.`, `admin-account-opened-${account.id}`);
 
     return Response.json({ ok: true, account }, { status: 201 });
   }
@@ -93,6 +95,7 @@ export async function POST(req: Request) {
       body: "Security settings or credentials on your account were updated by bank operations.",
       createdBy: admin.id,
     });
+    await emailUserNotification(targetUserId, "Security settings updated", "Security settings on your account were changed by bank operations. If you did not expect this, contact support through the app.");
 
     return Response.json({ ok: true });
   }

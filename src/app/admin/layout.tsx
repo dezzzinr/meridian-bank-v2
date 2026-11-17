@@ -7,6 +7,7 @@ import { initials } from "@/lib/format";
 import { ToastProvider } from "@/components/ui/Toast";
 import {
   IconArrowDownLeft,
+  IconFileText,
   IconLogOut,
   IconSend,
   IconShield,
@@ -16,6 +17,7 @@ import {
 
 const NAV = [
   { href: "/admin", label: "Users", icon: IconUsers },
+  { href: "/admin/kyc", label: "KYC Review", icon: IconFileText },
   { href: "/admin/messages", label: "Broadcast", icon: IconSend },
 ];
 

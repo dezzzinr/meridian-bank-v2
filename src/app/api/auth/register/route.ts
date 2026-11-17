@@ -6,6 +6,7 @@ import { apiError, readBody, str } from "@/lib/api";
 import { hashPassword } from "@/lib/password";
 import { generateAccountNumber } from "@/lib/ids";
 import { isValidCurrency, regionForCurrency } from "@/lib/currency";
+import { sendEmailNotification } from "@/lib/email";
 
 export async function POST(req: Request) {
   const body = await readBody(req);
@@ -59,6 +60,22 @@ export async function POST(req: Request) {
       if (amount > 0) await tx.insert(transactions).values({ userId: createdUser.id, accountId: account.id, kind: "credit", category: "Other", description: "Opening deposit", amountCents: amount, status: "completed" });
       return createdUser;
     });
+    const emailJobs = [sendEmailNotification({
+      to: user.email,
+      subject: "Registration received",
+      title: "Your application is under review",
+      message: "We received your account application. You will be notified by email when its status changes.",
+      idempotencyKey: `registration-${user.id}`,
+    })];
+    const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL?.trim();
+    if (adminEmail && /^\S+@\S+\.\S+$/.test(adminEmail)) emailJobs.push(sendEmailNotification({
+      to: adminEmail,
+      subject: "New account application",
+      title: "Registration waiting for approval",
+      message: "A new account application is awaiting review in the admin console.",
+      idempotencyKey: `registration-admin-${user.id}`,
+    }));
+    await Promise.all(emailJobs);
     return Response.json({ id: user.id, name: user.name, email: user.email, pendingApproval: true }, { status: 201 });
   } catch (error) {
     if (error && typeof error === "object" && "code" in error && error.code === "23505") return apiError(409, "An account with this email already exists.");

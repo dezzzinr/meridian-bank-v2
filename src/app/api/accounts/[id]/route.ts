@@ -5,6 +5,7 @@ import { HttpError, readBody, str } from "@/lib/api";
 import { bankingError, bankingUser, lockedActiveUser, positiveId, privateHeaders } from "@/lib/banking-server";
 import { listAccounts, toAccountDTO } from "@/lib/queries";
 import { isTermLocked } from "@/lib/banking";
+import { emailUserNotification } from "@/lib/email";
 
 type Ctx = { params: Promise<{ id: string }> };
 export async function GET(_req: Request, ctx: Ctx) {
@@ -31,7 +32,7 @@ export async function DELETE(_req: Request, ctx: Ctx) {
   try {
     const user = await bankingUser(true);
     const id = positiveId((await ctx.params).id);
-    await db.transaction(async (tx) => {
+    const accountName = await db.transaction(async (tx) => {
       await lockedActiveUser(tx, user.id);
       const [account] = await tx.select().from(accounts).where(and(eq(accounts.id, id), eq(accounts.userId, user.id))).for("update");
       if (!account || account.closedAt) throw new HttpError(404, "Only the primary owner can close an open account.");
@@ -42,7 +43,9 @@ export async function DELETE(_req: Request, ctx: Ctx) {
       await tx.update(accounts).set({ closedAt: new Date() }).where(eq(accounts.id, id));
       await tx.update(cards).set({ status: "closed", appleWalletDemo: false, googleWalletDemo: false }).where(eq(cards.accountId, id));
       await tx.insert(notifications).values({ userId: user.id, type: "account", title: "Account closed", body: `${account.name} was closed. Your statements and transaction history are retained.` });
+      return account.name;
     });
+    await emailUserNotification(user.id, "Account closed", `Your ${accountName} has been closed. Your statements and transaction history remain available.`, `account-closed-${user.id}-${id}`);
     return Response.json({ ok: true }, { headers: privateHeaders });
   } catch (error) { return bankingError(error, "accounts:close"); }
 }

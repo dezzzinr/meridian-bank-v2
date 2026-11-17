@@ -31,6 +31,15 @@ export async function upgradePaymentsDatabase() {
       ALTER TABLE public.users ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT 'active';
       ALTER TABLE public.users ADD COLUMN IF NOT EXISTS currency text NOT NULL DEFAULT 'USD';
       ALTER TABLE public.users ADD COLUMN IF NOT EXISTS region text NOT NULL DEFAULT 'United States';
+      ALTER TABLE public.users ADD COLUMN IF NOT EXISTS email_notifications_enabled boolean NOT NULL DEFAULT true;
+      ALTER TABLE public.users ADD COLUMN IF NOT EXISTS kyc_status text NOT NULL DEFAULT 'not_started';
+      ALTER TABLE public.users ADD COLUMN IF NOT EXISTS kyc_method text;
+      ALTER TABLE public.users ADD COLUMN IF NOT EXISTS kyc_document_type text;
+      ALTER TABLE public.users ADD COLUMN IF NOT EXISTS kyc_document_name text;
+      ALTER TABLE public.users ADD COLUMN IF NOT EXISTS kyc_document_data text;
+      ALTER TABLE public.users ADD COLUMN IF NOT EXISTS kyc_submitted_at timestamptz;
+      ALTER TABLE public.users ADD COLUMN IF NOT EXISTS kyc_reviewed_at timestamptz;
+      ALTER TABLE public.users ADD COLUMN IF NOT EXISTS kyc_review_note text;
 
       CREATE TABLE IF NOT EXISTS public.notifications (
         id serial PRIMARY KEY,

@@ -22,6 +22,7 @@ export function MobileBankingModals({ accounts, compact = false }: { accounts: A
   const [generatedQr, setGeneratedQr] = useState<string | null>(null);
   const [scannedInput, setScannedInput] = useState("");
   const [qrAmount, setQrAmount] = useState("");
+  const [transactionPin, setTransactionPin] = useState("");
 
   // Mobile money state
   const [mmProvider, setMmProvider] = useState("M-Pesa");
@@ -58,6 +59,8 @@ export function MobileBankingModals({ accounts, compact = false }: { accounts: A
 
   const handlePayScannedQr = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user.hasTransactionPin) return setError("Set an authorization PIN in Security Center before making payments.");
+    if (!/^\d{4}$/.test(transactionPin)) return setError("Enter your 4-digit authorization PIN.");
     setBusy(true);
     setError("");
     try {
@@ -68,12 +71,14 @@ export function MobileBankingModals({ accounts, compact = false }: { accounts: A
           sourceAccountId: selectedAccId,
           qrData: scannedInput,
           amount: qrAmount,
+          transactionPin,
         }),
       });
       toast("success", `QR payment completed. Ref: ${res.reference}`);
       setActiveModal(null);
       setScannedInput("");
       setQrAmount("");
+      setTransactionPin("");
       window.dispatchEvent(new Event("meridian:banking-updated"));
     } catch (err: any) {
       setError(err.message || "Could not process QR payment.");
@@ -84,6 +89,8 @@ export function MobileBankingModals({ accounts, compact = false }: { accounts: A
 
   const handleSendMobileMoney = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user.hasTransactionPin) return setError("Set an authorization PIN in Security Center before making payments.");
+    if (!/^\d{4}$/.test(transactionPin)) return setError("Enter your 4-digit authorization PIN.");
     setBusy(true);
     setError("");
     try {
@@ -95,12 +102,14 @@ export function MobileBankingModals({ accounts, compact = false }: { accounts: A
           provider: mmProvider,
           phone: mmPhone,
           amount: mmAmount,
+          transactionPin,
         }),
       });
       toast("success", `Mobile money transferred to ${mmPhone}. Ref: ${res.reference}`);
       setActiveModal(null);
       setMmPhone("");
       setMmAmount("");
+      setTransactionPin("");
       window.dispatchEvent(new Event("meridian:banking-updated"));
     } catch (err: any) {
       setError(err.message || "Mobile money dispatch failed.");
@@ -266,13 +275,21 @@ export function MobileBankingModals({ accounts, compact = false }: { accounts: A
             />
           </Field>
 
+          {!user.hasTransactionPin ? (
+            <p className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">Set an authorization PIN in <Link href="/app/security" className="font-semibold underline">Security Center</Link> before making payments.</p>
+          ) : (
+            <Field label="4-digit Authorization PIN">
+              <Input type="password" inputMode="numeric" maxLength={4} pattern="[0-9]{4}" required placeholder="••••" value={transactionPin} onChange={(e) => setTransactionPin(e.target.value.replace(/\D/g, ""))} className="text-center font-mono tracking-widest" />
+            </Field>
+          )}
+
           {error && <p className="text-xs text-rose font-medium">{error}</p>}
 
           <div className="flex gap-2">
             <button type="button" onClick={() => setActiveModal(null)} className="btn-outline flex-1 text-xs">
               Cancel
             </button>
-            <button type="submit" disabled={busy} className="btn-primary flex-1 text-xs">
+            <button type="submit" disabled={busy || !user.hasTransactionPin} className="btn-primary flex-1 text-xs">
               {busy ? <IconSpinner size={14} /> : "Authorize QR Payment"}
             </button>
           </div>
@@ -334,13 +351,21 @@ export function MobileBankingModals({ accounts, compact = false }: { accounts: A
             />
           </Field>
 
+          {!user.hasTransactionPin ? (
+            <p className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">Set an authorization PIN in <Link href="/app/security" className="font-semibold underline">Security Center</Link> before making payments.</p>
+          ) : (
+            <Field label="4-digit Authorization PIN">
+              <Input type="password" inputMode="numeric" maxLength={4} pattern="[0-9]{4}" required placeholder="••••" value={transactionPin} onChange={(e) => setTransactionPin(e.target.value.replace(/\D/g, ""))} className="text-center font-mono tracking-widest" />
+            </Field>
+          )}
+
           {error && <p className="text-xs text-rose font-medium">{error}</p>}
 
           <div className="flex gap-2">
             <button type="button" onClick={() => setActiveModal(null)} className="btn-outline flex-1 text-xs">
               Cancel
             </button>
-            <button type="submit" disabled={busy} className="btn-primary flex-1 text-xs">
+            <button type="submit" disabled={busy || !user.hasTransactionPin} className="btn-primary flex-1 text-xs">
               {busy ? <IconSpinner size={14} /> : "Dispatch Mobile Money"}
             </button>
           </div>

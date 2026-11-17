@@ -5,6 +5,7 @@ import { apiError, readBody, requireAdmin, str } from "@/lib/api";
 import { positiveId } from "@/lib/banking-server";
 import { hashPassword } from "@/lib/password";
 import { CARD_STATUSES, type CardStatus } from "@/lib/banking";
+import { emailUserNotification } from "@/lib/email";
 
 export async function POST(req: Request) {
   const admin = await requireAdmin();
@@ -95,13 +96,14 @@ export async function POST(req: Request) {
     })
     .returning();
 
-  await db.insert(notifications).values({
+  const [emailEvent] = await db.insert(notifications).values({
     userId,
     type: "security",
     title: "New Card Issued by Bank",
     body: `${name} (${kind.toUpperCase()}) ending in •••• ${last4} was issued by administration.`,
     createdBy: admin.id,
-  });
+  }).returning({ id: notifications.id });
+  await emailUserNotification(userId, "New card issued", `A ${kind} card ending in ${last4} was issued to your account. Sign in to review it.`, `notification-${emailEvent.id}`);
 
   return Response.json({
     ok: true,

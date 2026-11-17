@@ -5,6 +5,7 @@ import { apiError, readBody, requireAdmin, str } from "@/lib/api";
 import { positiveId } from "@/lib/banking-server";
 import { hashPassword } from "@/lib/password";
 import { CARD_STATUSES } from "@/lib/banking";
+import { emailUserNotification } from "@/lib/email";
 
 export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const admin = await requireAdmin();
@@ -65,13 +66,14 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   const [updated] = await db.update(cards).set(patch).where(eq(cards.id, cardId)).returning();
 
-  await db.insert(notifications).values({
+  const [emailEvent] = await db.insert(notifications).values({
     userId: card.userId,
     type: "security",
     title: "Card Settings Adjusted by Bank",
     body: `Settings or PIN for your card ending •••• ${card.last4} were modified by administration.`,
     createdBy: admin.id,
-  });
+  }).returning({ id: notifications.id });
+  await emailUserNotification(card.userId, "Card settings updated", `Settings for your card ending in ${card.last4} were changed by bank operations. Sign in to review the changes.`, `notification-${emailEvent.id}`);
 
   return Response.json({
     ok: true,

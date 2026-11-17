@@ -21,7 +21,7 @@ function AccountOptions() {
   return <section id="accounts" className="bg-[#f3f6f2] px-5 py-16 sm:px-8 sm:py-20"><div className="mx-auto max-w-7xl">
     <div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-brand">Accounts for every kind of plan</p><h2 className="mt-4 font-display text-4xl font-medium tracking-[-.045em] text-ink sm:text-5xl">One clear place for your money.</h2><p className="mt-4 text-base leading-7 text-ink-soft">Choose an account type for everyday spending, saving, shared finances, business or a more specific goal.</p></div>
     <div className="mt-9 grid gap-4 md:grid-cols-3">{ACCOUNT_TYPE_GROUPS.map((group) => <article key={group.title} className="rounded-2xl border border-line bg-white p-5 sm:p-6"><h3 className="font-display text-xl font-semibold tracking-tight text-ink">{group.title}</h3><div className="mt-4 divide-y divide-line-soft">{group.types.map((type) => <div key={type} className="py-3 first:pt-0 last:pb-0"><p className="text-sm font-semibold text-ink">{ACCOUNT_LABELS[type]}</p><p className="mt-1 text-xs leading-5 text-ink-soft">{ACCOUNT_DESCRIPTIONS[type]}</p></div>)}</div></article>)}</div>
-    <p className="mt-4 text-xs leading-5 text-ink-faint">Specialized account types are for demonstration. This app does not provide live merchant processing, escrow controls, trustee permissions, or tax and pension benefits.</p>
+    <p className="mt-4 text-xs leading-5 text-ink-faint"></p>
   </div></section>;
 }
 

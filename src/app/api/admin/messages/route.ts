@@ -1,8 +1,9 @@
 import { eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { notifications, users } from "@/db/schema";
 import { apiError, readBody, requireAdmin, str } from "@/lib/api";
 import { logNotification } from "@/lib/notify";
+import { emailUserNotification } from "@/lib/email";
 
 /**
  * Send an admin message. Either to one user (userId) or to everyone
@@ -42,9 +43,18 @@ export async function POST(req: Request) {
     recipientIds = [target.id];
   }
 
-  for (const id of recipientIds) {
+  if (audience === "all" && recipientIds.length) {
+    const saved = await db.insert(notifications).values(recipientIds.map((userId) => ({
+      userId, type: "admin_message" as const, title, body: message, createdBy: admin.id,
+    }))).returning({ id: notifications.id, userId: notifications.userId });
+    for (let offset = 0; offset < saved.length; offset += 10) {
+      await Promise.all(saved.slice(offset, offset + 10).map((row) =>
+        emailUserNotification(row.userId, title, message, `notification-${row.id}`),
+      ));
+    }
+  } else if (recipientIds[0]) {
     await logNotification({
-      userId: id,
+      userId: recipientIds[0],
       type: "admin_message",
       title,
       body: message,

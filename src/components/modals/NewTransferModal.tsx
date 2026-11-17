@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { apiJson } from "@/lib/client";
 import { isTermLocked, parseAmount } from "@/lib/banking";
 import type { AccountDTO, PayeeDTO } from "@/lib/queries";
@@ -119,6 +120,7 @@ export function NewTransferModal({ accounts, open, onClose, onDone }: { accounts
     setError("");
 
     if (!source || !eligible.some((a) => a.id === source.id)) return setError("Choose an available source account.");
+    if (!user.hasTransactionPin) return setError("Set an authorization PIN in Security Center before sending money.");
     if (tab === "account" && !destId) return setError("Choose a destination account.");
     if (tab === "payee" && !destId) return setError("Choose a saved payee.");
     if (tab === "new_recipient") {
@@ -142,8 +144,8 @@ export function NewTransferModal({ accounts, open, onClose, onDone }: { accounts
       return;
     }
 
-    if (user.hasTransactionPin && !transactionPin) {
-      return setError("Please enter your 4-digit transaction PIN.");
+    if (!/^\d{4}$/.test(transactionPin)) {
+      return setError("Please enter your 4-digit authorization PIN.");
     }
 
     setBusy(true);
@@ -201,6 +203,11 @@ export function NewTransferModal({ accounts, open, onClose, onDone }: { accounts
       subtitle={review ? "Check every detail before you confirm." : "Choose how you want to send money."}
     >
       <form onSubmit={submit} className="space-y-4">
+        {!user.hasTransactionPin && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+            Set an authorization PIN before sending money. <Link href="/app/security" className="font-semibold underline">Set it in Security Center</Link>.
+          </div>
+        )}
         {!review ? (
           <>
             <Field label="From">
@@ -414,7 +421,7 @@ export function NewTransferModal({ accounts, open, onClose, onDone }: { accounts
 
             {user.hasTransactionPin && (
               <div className="pt-2">
-                <Field label="Enter Transaction PIN" hint="Your secure 4-digit transfer PIN is required to authorize this debit.">
+                <Field label="Enter Authorization PIN" hint="Your 4-digit authorization PIN is required to approve this transfer.">
                   <div className="relative">
                     <Input
                       type="password"
@@ -451,7 +458,7 @@ export function NewTransferModal({ accounts, open, onClose, onDone }: { accounts
           >
             {review ? "Back" : "Cancel"}
           </button>
-          <button disabled={busy || !source || user.status !== "active"} className="btn-primary flex-1">
+          <button disabled={busy || !source || user.status !== "active" || !user.hasTransactionPin} className="btn-primary flex-1">
             {busy && <IconSpinner size={15} />}
             {review ? "Authorize & Send" : "Review Payment"}
           </button>

@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { accountMembers, accounts, notifications, users } from "@/db/schema";
 import { HttpError, readBody } from "@/lib/api";
 import { bankingError, bankingUser, lockedActiveUser, positiveId, privateHeaders } from "@/lib/banking-server";
+import { emailUserNotification } from "@/lib/email";
 
 export async function GET() {
   try {
@@ -20,7 +21,7 @@ export async function PATCH(req: Request) {
     const id = positiveId(body.id);
     if (!["accepted", "declined"].includes(String(body.status))) throw new HttpError(400, "Choose accept or decline.");
     const status = body.status as "accepted" | "declined";
-    await db.transaction(async (tx) => {
+    const change = await db.transaction(async (tx) => {
       await lockedActiveUser(tx, user.id);
       const [invitation] = await tx.select().from(accountMembers).where(and(eq(accountMembers.id, id), eq(accountMembers.userId, user.id))).for("update");
       if (!invitation || invitation.status !== "pending") throw new HttpError(409, "This invitation is no longer pending.");
@@ -31,7 +32,13 @@ export async function PATCH(req: Request) {
         { userId: user.id, type: "account", title: `Invitation ${status}`, body: status === "accepted" ? `You can now access ${account.name}, its balance and statements, and make payments from it.` : `You declined the invitation to ${account.name}.` },
         { userId: account.userId, type: "account", title: `Joint invitation ${status}`, body: `${user.name} ${status} your invitation to ${account.name}.`, createdBy: user.id },
       ]);
+      return { ownerId: account.userId, accountName: account.name };
     });
+    const outcome = status === "accepted" ? "accepted" : "declined";
+    await Promise.all([
+      emailUserNotification(user.id, `Invitation ${outcome}`, `You ${outcome} the invitation to ${change.accountName}.`, `invitation-${id}-${user.id}-${outcome}`),
+      emailUserNotification(change.ownerId, `Joint invitation ${outcome}`, `${user.name} ${outcome} your invitation to ${change.accountName}.`, `invitation-${id}-${change.ownerId}-${outcome}`),
+    ]);
     return Response.json({ ok: true }, { headers: privateHeaders });
   } catch (error) { return bankingError(error, "invitations:respond"); }
 }

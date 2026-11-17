@@ -78,7 +78,7 @@ export async function POST(req: Request) {
 
     if (action === "set_pin") {
       const pin = String(body.pin || "");
-      if (!/^\d{4}$/.test(pin)) throw new HttpError(400, "Transaction PIN must be exactly 4 digits.");
+      if (!/^\d{4}$/.test(pin)) throw new HttpError(400, "Authorization PIN must be exactly 4 digits.");
       await db.update(users).set({ transactionPinHash: hashPassword(pin) }).where(eq(users.id, user.id));
       return Response.json({ ok: true });
     }

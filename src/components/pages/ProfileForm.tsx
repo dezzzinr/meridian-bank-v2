@@ -155,7 +155,7 @@ export function ProfileForm({
   return (
     <div className="grid gap-4 lg:grid-cols-2">
       {/* Profile Picture & Personal Details */}
-      <form onSubmit={saveName} className="card p-5">
+      <form id="profile-settings" onSubmit={saveName} className="card scroll-mt-24 p-5">
         <div className="mb-4 flex items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-soft text-brand-deep">
             <IconUser size={16} />
@@ -242,7 +242,7 @@ export function ProfileForm({
       </form>
 
       {/* Password Management */}
-      <form onSubmit={savePassword} className="card p-5">
+      <form id="password-settings" onSubmit={savePassword} className="card scroll-mt-24 p-5">
         <div className="mb-4 flex items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-soft text-brand-deep">
             <IconShield size={16} />

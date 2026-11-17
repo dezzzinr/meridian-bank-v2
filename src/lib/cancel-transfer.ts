@@ -3,8 +3,9 @@ import { db } from "@/db";
 import { accounts, notifications, transactions, transfers } from "@/db/schema";
 import { HttpError } from "./api";
 import { accountAccess, lockedActiveUser } from "./banking-server";
+import { emailUserNotification } from "./email";
 export async function cancelTransfer(userId: number, id: number) {
-  return db.transaction(async (tx) => {
+  const cancelled = await db.transaction(async (tx) => {
     await lockedActiveUser(tx, userId);
     const [lookup] = await tx.select({ accountId: transfers.sourceAccountId }).from(transfers).where(and(eq(transfers.id, id), eq(transfers.userId, userId)));
     if (!lookup) throw new HttpError(404, "Payment not found.");
@@ -16,6 +17,8 @@ export async function cancelTransfer(userId: number, id: number) {
     await tx.update(transactions).set({ status: "voided" }).where(and(eq(transactions.transferId, id), eq(transactions.status, "pending")));
     await tx.update(accounts).set({ balanceCents: sql`${accounts.balanceCents} + ${transfer.amountCents + transfer.feeCents}` }).where(eq(accounts.id, account.id));
     await tx.insert(notifications).values({ userId, type: "payment", title: "Payment cancelled", body: `${transfer.referenceNumber} was cancelled and the held amount returned to ${account.name}.` });
-    return { ok: true };
+    return { accountName: account.name };
   });
+  await emailUserNotification(userId, "Payment cancelled", `Your pending payment was cancelled and the amount returned to ${cancelled.accountName}. Sign in to review the details.`, `transfer-cancelled-${id}`);
+  return { ok: true };
 }

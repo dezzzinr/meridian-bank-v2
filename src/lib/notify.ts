@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import { notifications } from "@/db/schema";
+import { emailUserNotification } from "@/lib/email";
 
 type NotifType =
   | "transfer"
@@ -23,13 +24,14 @@ interface NotifInput {
  */
 export async function logNotification(input: NotifInput): Promise<void> {
   try {
-    await db.insert(notifications).values({
+    const [saved] = await db.insert(notifications).values({
       userId: input.userId,
       type: input.type,
       title: input.title,
       body: input.body,
       createdBy: input.createdBy ?? null,
-    });
+    }).returning({ id: notifications.id });
+    if (saved) await emailUserNotification(input.userId, input.title, input.body, `notification-${saved.id}`);
   } catch (e) {
     console.error("Failed to log notification:", e);
   }

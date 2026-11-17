@@ -7,6 +7,7 @@ import { ACCOUNT_TYPES, parseAmount, TERM_RATES, termMaturity, type AccountType 
 import { isValidCurrency } from "@/lib/currency";
 import { generateAccountNumber } from "@/lib/ids";
 import { listAccounts, toAccountDTO } from "@/lib/queries";
+import { emailUserNotification } from "@/lib/email";
 
 export async function GET(req: Request) {
   try {
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
     const email = typeof body.jointEmail === "string" ? body.jointEmail.trim().toLowerCase() : "";
     if (type === "joint" && (!/^\S+@\S+\.\S+$/.test(email) || email === user.email)) throw new HttpError(400, "Enter another registered customer's email to invite.");
 
+    let inviteeUserId: number | null = null;
     const account = await db.transaction(async (tx) => {
       await lockedActiveUser(tx, user.id);
       const existing = await tx.select({ id: accounts.id }).from(accounts).where(and(eq(accounts.userId, user.id), isNull(accounts.closedAt)));
@@ -51,12 +53,16 @@ export async function POST(req: Request) {
       }).returning();
       if (amount > 0) await tx.insert(transactions).values({ userId: user.id, accountId: created.id, kind: "credit", category: "Other", description: "Demo opening deposit", amountCents: amount, status: "completed" });
       if (coholder) {
+        inviteeUserId = coholder.id;
         await tx.insert(accountMembers).values({ accountId: created.id, userId: coholder.id });
         await tx.insert(notifications).values({ userId: coholder.id, type: "account", title: "Joint account invitation", body: `${user.name} invited you to ${name}. Accept or decline in Accounts. No balance or transaction access is granted until you accept.`, createdBy: user.id });
       }
       await tx.insert(notifications).values({ userId: user.id, type: "account", title: "Account opened", body: `${name} is ready in ${currency}.${coholder ? " Your co-holder invitation is pending." : ""}` });
       return created;
     });
+    const emailJobs = [emailUserNotification(user.id, "Account opened", `Your ${account.name} is ready in ${currency}.`, `account-opened-${account.id}`)];
+    if (inviteeUserId) emailJobs.push(emailUserNotification(inviteeUserId, "Joint account invitation", `${user.name} invited you to a joint account. Sign in to review the invitation.`, `joint-invite-${account.id}`));
+    await Promise.all(emailJobs);
     return Response.json(toAccountDTO(account, user.id, user.name), { status: 201, headers: privateHeaders });
   } catch (error) { return bankingError(error, "accounts:create"); }
 }

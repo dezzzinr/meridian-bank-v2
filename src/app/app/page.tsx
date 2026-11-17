@@ -1,33 +1,26 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/client";
 import { useCurrentUser } from "@/components/CurrencyContext";
-import { categoryStyle, dayLabel, greeting } from "@/lib/format";
+import { dayLabel, greeting } from "@/lib/format";
 import { DashboardActions } from "@/components/pages/DashboardActions";
 import { MobileBankingModals } from "@/components/banking/MobileBankingModals";
-import { TypeBadge } from "@/components/ui/Badge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import {
   IconArrowDownLeft,
   IconArrowUpRight,
-  IconCheck,
-  IconClock,
+  IconCircleHelp,
   IconEye,
   IconEyeOff,
-  IconInfo,
   IconPlus,
-  IconSpinner,
   IconSend,
-  IconShield,
   IconSwap,
   IconTrendingUp,
   IconWallet,
-  IconX,
 } from "@/components/icons";
-import type { AccountDTO, TransactionDTO } from "@/lib/queries";
+import type { AccountDTO, PayeeDTO, TransactionDTO } from "@/lib/queries";
 
 interface DashboardData {
   accounts: AccountDTO[];
@@ -47,169 +40,30 @@ interface DashboardData {
   hasForeignCurrency: boolean;
 }
 
-interface Rates {
-  base: string;
-  rates: Record<string, number>;
-}
+const CURRENCY_FLAGS: Record<string, string> = {
+  USD: "🇺🇸", GBP: "🇬🇧", EUR: "🇪🇺", NGN: "🇳🇬", KES: "🇰🇪", INR: "🇮🇳",
+  CAD: "🇨🇦", AUD: "🇦🇺", JPY: "🇯🇵", CHF: "🇨🇭", ZAR: "🇿🇦", GHS: "🇬🇭",
+};
 
-/* ---- Spend Chart (8 weeks) ---- */
-function SpendChart({ weeks }: { weeks: { label: string; cents: number }[] }) {
+/* ---- Accounts panel ---- */
+function AccountSummary({ accounts }: { accounts: AccountDTO[] }) {
   const { money } = useCurrentUser();
-  const max = Math.max(...weeks.map((w) => w.cents), 1);
-  const total = weeks.reduce((s, w) => s + w.cents, 0);
   return (
-    <div className="card p-5">
-      <div className="flex items-baseline justify-between">
-        <h3 className="font-display text-base font-semibold text-ink">
-          Weekly spending
-        </h3>
-        <p className="text-xs font-medium text-ink-faint">8 weeks</p>
+    <div className="card overflow-hidden">
+      <div className="flex items-center justify-between border-b border-line-soft px-5 py-3.5">
+        <div><h3 className="font-display text-base font-semibold text-ink">Your accounts</h3><p className="mt-0.5 text-[11px] text-ink-faint">Balances by account</p></div>
+        <Link href="/app/accounts" className="text-[13px] font-semibold text-brand transition hover:text-brand-deep">View all</Link>
       </div>
-      <p className="mt-3 font-display text-2xl font-semibold tracking-tight text-ink">
-        {money(total)}
-      </p>
-      <div className="mt-4 flex h-36 items-end gap-1.5 sm:gap-2">
-        {weeks.map((w, i) => (
-          <div key={i} className="flex h-full flex-1 flex-col justify-end" title={`${w.label} — ${money(w.cents)}`}>
-            <div
-              className={`w-full rounded-md transition hover:opacity-75 ${i === weeks.length - 1 ? "bg-brand" : "bg-brand/25"}`}
-              style={{ height: `${Math.max(5, Math.round((w.cents / max) * 100))}%` }}
-            />
-          </div>
+      <div className="divide-y divide-line-soft">
+        {accounts.slice(0, 4).map((account) => (
+          <Link key={account.id} href="/app/accounts" className="flex items-center gap-3 px-5 py-3 transition hover:bg-paper/70">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-soft text-[10px] font-bold text-brand-deep">{account.currency.slice(0, 3)}</span>
+            <span className="min-w-0 flex-1"><span className="block truncate text-[13px] font-semibold text-ink">{account.name}</span><span className="block truncate text-[11px] text-ink-faint">{account.type.replaceAll("_", " ")} · •••• {account.last4}</span></span>
+            <span className="font-display text-sm font-semibold text-ink">{money(account.balanceCents, account.currency)}</span>
+          </Link>
         ))}
+        {accounts.length === 0 && <p className="px-5 py-8 text-center text-sm text-ink-soft">No accounts yet.</p>}
       </div>
-      <div className="mt-2 flex gap-1.5 sm:gap-2">
-        {weeks.map((w, i) => (
-          <p key={i} className="flex-1 truncate text-center text-[10px] font-medium text-ink-faint">
-            {i % 2 === 0 ? w.label : ""}
-          </p>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ---- Monthly Income vs Expenses ---- */
-function MonthlyChart({
-  monthly,
-}: {
-  monthly: { label: string; income: number; spend: number }[];
-}) {
-  const { money } = useCurrentUser();
-  const max = Math.max(...monthly.flatMap((m) => [m.income, m.spend]), 1);
-  return (
-    <div className="card p-5">
-      <h3 className="font-display text-base font-semibold text-ink">
-        Income vs expenses
-      </h3>
-      <p className="mt-1 text-xs text-ink-faint">Last 6 months</p>
-      <div className="mt-4 flex h-40 items-end gap-3">
-        {monthly.map((m, i) => (
-          <div key={i} className="flex h-full flex-1 items-end justify-center gap-1">
-            <div
-              className="w-full rounded-t bg-good/70"
-              style={{ height: `${Math.max(3, (m.income / max) * 100)}%` }}
-              title={`${m.label} income: ${money(m.income)}`}
-            />
-            <div
-              className="w-full rounded-t bg-rose/50"
-              style={{ height: `${Math.max(3, (m.spend / max) * 100)}%` }}
-              title={`${m.label} spend: ${money(m.spend)}`}
-            />
-          </div>
-        ))}
-      </div>
-      <div className="mt-2 flex gap-3">
-        {monthly.map((m, i) => (
-          <p key={i} className="flex-1 text-center text-[10px] font-medium text-ink-faint">
-            {m.label}
-          </p>
-        ))}
-      </div>
-      <div className="mt-2 flex items-center gap-4">
-        <span className="flex items-center gap-1.5 text-[11px] text-ink-faint">
-          <span className="h-2 w-2 rounded-sm bg-good/70" /> Income
-        </span>
-        <span className="flex items-center gap-1.5 text-[11px] text-ink-faint">
-          <span className="h-2 w-2 rounded-sm bg-rose/50" /> Expenses
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/* ---- Spending by Category ---- */
-function CategoryBreakdown({
-  byCategory,
-}: {
-  byCategory: { category: string; cents: number }[];
-}) {
-  const { money } = useCurrentUser();
-  const total = byCategory.reduce((s, c) => s + c.cents, 0);
-  return (
-    <div className="card p-5">
-      <h3 className="font-display text-base font-semibold text-ink">
-        Spending by category
-      </h3>
-      <p className="mt-1 text-xs text-ink-faint">This month</p>
-      <div className="mt-4 space-y-2.5">
-        {byCategory.map((c) => {
-          const pct = total > 0 ? Math.round((c.cents / total) * 100) : 0;
-          return (
-            <div key={c.category}>
-              <div className="flex items-center justify-between text-[13px]">
-                <span className="font-medium text-ink">{c.category}</span>
-                <span className="font-display font-semibold text-ink">
-                  {money(c.cents)}
-                </span>
-              </div>
-              <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-line">
-                <div
-                  className={`h-full rounded-full ${categoryStyle(c.category).split(" ")[0]}`}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-            </div>
-          );
-        })}
-        {byCategory.length === 0 && (
-          <p className="text-sm text-ink-faint">No spending data yet.</p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ---- Exchange Rates ---- */
-function ExchangeRates({ rates }: { rates: Rates | null }) {
-  if (!rates) return null;
-  const display = ["EUR", "GBP", "NGN", "KES", "INR", "CAD"].filter(
-    (c) => c !== rates.base,
-  );
-  return (
-    <div className="card p-5">
-      <h3 className="font-display text-base font-semibold text-ink">
-        Exchange rates
-      </h3>
-      <p className="mt-1 text-xs text-ink-faint">
-        Base: {rates.base} · indicative rates
-      </p>
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        {display.map((code) => (
-          <div
-            key={code}
-            className="flex items-center justify-between rounded-lg bg-paper px-3 py-2"
-          >
-            <span className="text-[13px] font-medium text-ink">{code}</span>
-            <span className="font-display text-sm font-semibold text-ink">
-              {rates.rates[code]?.toFixed(2) ?? "—"}
-            </span>
-          </div>
-        ))}
-      </div>
-      <p className="mt-2 text-[11px] text-ink-faint">
-        Indicative mid-market rates for display purposes.
-      </p>
     </div>
   );
 }
@@ -268,14 +122,11 @@ function MobileDashboard({ data, hidden, onToggleBalance }: { data: DashboardDat
 /* ---- Main Dashboard ---- */
 export default function DashboardPage() {
   const { user, money, moneySigned } = useCurrentUser();
-  const router = useRouter();
-  const [navigationPending, startNavigation] = useTransition();
-  const [pendingAction, setPendingAction] = useState("");
   const [data, setData] = useState<DashboardData | null>(null);
-  const [rates, setRates] = useState<Rates | null>(null);
   const [notifications, setNotifications] = useState<
     { id: number; type: string; title: string; body: string; createdAt: string }[]
   >([]);
+  const [payees, setPayees] = useState<PayeeDTO[]>([]);
   const [loadErr, setLoadErr] = useState(false);
   const [hidden, setHidden] = useState(false);
 
@@ -288,13 +139,13 @@ export default function DashboardPage() {
       })
       .then(setData)
       .catch(() => setLoadErr(true));
-    apiFetch("/api/exchange-rates", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then(setRates)
-      .catch(() => {});
     apiFetch("/api/notifications?limit=3", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => setNotifications((d?.notifications ?? []).slice(0, 3)))
+      .catch(() => {});
+    apiFetch("/api/payees", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setPayees(d?.payees ?? []))
       .catch(() => {});
   };
 
@@ -324,296 +175,123 @@ export default function DashboardPage() {
           <p className="mt-1 text-[11px] text-ink-soft sm:hidden">Here’s your account at a glance.</p>
         </div>
         {data && <div className={onboarding ? "" : "hidden sm:block"}>
-          <DashboardActions accounts={data.accounts} onboarding={onboarding} />
+          {onboarding ? <DashboardActions accounts={data.accounts} onboarding={onboarding} /> : <div className={`flex items-center gap-2 rounded-full px-3 py-2 text-[10px] font-semibold ${user.status === "active" ? "bg-good-soft text-good" : "bg-amber-soft text-amber"}`}><span className={`h-2 w-2 rounded-full ${user.status === "active" ? "bg-good" : "bg-amber"}`}/>{user.status === "active" ? "Account active" : `Account ${user.status}`}</div>}
         </div>}
       </div>
 
       <div className="hidden sm:block">
-      {data?.hasForeignCurrency && <p className="mb-4 rounded-xl bg-brand-soft/40 p-3 text-xs text-brand-deep">Overview in {data.baseCurrency} · Foreign-currency totals use live indicative exchange-rate estimates. Account balances and individual transactions remain in their original currency.</p>}
-      {loadErr ? (
-        <div className="card p-10 text-center">
-          <p className="text-sm font-semibold text-rose">Couldn't load your dashboard.</p>
-          <button className="btn-outline mt-4" onClick={load}>Try again</button>
-        </div>
-      ) : !data ? (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="card p-5">
-                <Skeleton className="h-3 w-24" />
-                <Skeleton className="mt-4 h-7 w-32" />
-              </div>
-            ))}
+        {loadErr ? (
+          <div className="card p-10 text-center">
+            <p className="text-sm font-semibold text-rose">Couldn’t load your dashboard.</p>
+            <button className="btn-outline mt-4" onClick={load}>Try again</button>
           </div>
-        </div>
-      ) : onboarding ? (
-        /* ---- Onboarding empty state ---- */
-        <div className="card animate-rise p-8 sm:p-10">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-soft text-brand-deep">
-            <IconWallet size={22} />
-          </span>
-          <h2 className="mt-5 font-display text-2xl font-semibold tracking-tight text-ink">
-            Let's set up your first account
-          </h2>
-          <p className="mt-2 max-w-lg text-sm leading-relaxed text-ink-soft">
-            Open a checking account for everyday spending or a savings account
-            that earns keeps your goals separate from everyday spending.
-          </p>
-        </div>
-      ) : (
-        <>
-          {/* ---- Balance Cards ---- */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-            <div className="col-span-2 overflow-hidden rounded-2xl bg-gradient-to-br from-[#0e6849] via-[#168355] to-[#35b96e] p-5 text-white shadow-card sm:p-6 xl:col-span-1">
-              <div className="flex items-center justify-between">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-100/50">
-                  Total balance
-                </p>
-                <button
-                  onClick={() => setHidden(!hidden)}
-                  className="rounded-md p-1 text-emerald-100/50 transition hover:text-white"
-                  aria-label={hidden ? "Show balance" : "Hide balance"}
-                >
-                  {hidden ? <IconEyeOff size={14} /> : <IconEye size={14} />}
-                </button>
-              </div>
-              <p className="mt-3 font-display text-[30px] font-semibold tracking-tight sm:text-3xl">
-                {hidden ? "••••••" : money(data.totalCents)}
-              </p>
-              <p className="mt-1.5 text-xs text-emerald-100/45">
-                {data.accounts.length} account{data.accounts.length === 1 ? "" : "s"}
-              </p>
-              {data.accounts[0] && <div className="mt-4 min-w-0 border-t border-white/10 pt-3">
-                <p className="truncate text-[10px] font-medium text-emerald-100/55">Default account · {data.accounts[0].name}</p>
-                <p className="break-all font-mono text-[11px] tracking-wide text-white/90">
-                  {hidden ? `•••• ${data.accounts[0].last4}` : data.accounts[0].accountNumber}
-                </p>
-              </div>}
-            </div>
-            <div className="card p-5">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
-                Available balance
-              </p>
-              <p className="mt-3 font-display text-[22px] font-semibold tracking-tight text-ink sm:text-2xl">
-                {hidden ? "•••••" : money(data.availableCents)}
-              </p>
-              <p className="mt-1 text-xs text-ink-faint">Excludes locked fixed deposits</p>
-            </div>
-            <div className="card p-5">
-              <div className="flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-soft text-brand-deep">
-                  <IconTrendingUp size={14} />
-                </span>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
-                  Savings
-                </p>
-              </div>
-              <p className="mt-3 font-display text-[22px] font-semibold tracking-tight text-brand-deep sm:text-2xl">
-                {hidden ? "•••••" : money(data.savingsCents)}
-              </p>
-            </div>
-            <div className={`card p-5 ${data.pendingCount > 0 ? "border-amber/30 bg-amber-soft/50" : ""}`}>
-              <div className="flex items-center gap-2">
-                <span className={`flex h-7 w-7 items-center justify-center rounded-full ${data.pendingCount > 0 ? "bg-amber-soft text-amber" : "bg-good-soft text-good"}`}>
-                  {data.pendingCount > 0 ? <IconClock size={14} /> : <IconCheck size={14} />}
-                </span>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Pending</p>
-              </div>
-              {data.pendingCount > 0 ? (
-                <>
-                  <p className="mt-3 font-display text-[22px] font-semibold tracking-tight text-amber sm:text-2xl">
-                    {money(data.pendingCents)}
-                  </p>
-                  <p className="mt-1 text-xs font-medium text-amber/80">
-                    {data.pendingCount} payment{data.pendingCount === 1 ? "" : "s"} settling
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="mt-3 font-display text-[22px] font-semibold tracking-tight text-ink sm:text-2xl">{money(0)}</p>
-                  <p className="mt-1 text-xs text-ink-faint">All settled</p>
-                </>
-              )}
-            </div>
+        ) : !data ? (
+          <div className="grid gap-4 lg:grid-cols-12">
+            <Skeleton className="h-[225px] rounded-2xl lg:col-span-8" />
+            <Skeleton className="h-[225px] rounded-2xl lg:col-span-4" />
+            <Skeleton className="h-36 rounded-2xl lg:col-span-8" />
           </div>
+        ) : onboarding ? (
+          <div className="card animate-rise p-8 sm:p-10">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-soft text-brand-deep"><IconWallet size={22} /></span>
+            <h2 className="mt-5 font-display text-2xl font-semibold tracking-tight text-ink">Let’s set up your first account</h2>
+            <p className="mt-2 max-w-lg text-sm leading-relaxed text-ink-soft">Open a current account for everyday spending or a savings account to keep your goals separate.</p>
+            <div className="mt-5"><DashboardActions accounts={data.accounts} onboarding /></div>
+          </div>
+        ) : (
+          <div className="grid items-start gap-5 xl:grid-cols-12">
+            <div className="min-w-0 space-y-5 xl:col-span-8">
+              {data.hasForeignCurrency && <p className="rounded-xl bg-brand-soft/40 p-3 text-xs text-brand-deep">Overview in {data.baseCurrency} · Foreign-currency totals use indicative exchange-rate estimates.</p>}
 
-          {/* ---- Income vs Expenses + Spending ---- */}
-          <div className="mt-4 grid gap-3 sm:gap-4 lg:grid-cols-2">
-            <div className="card order-2 p-5 lg:order-1">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">
-                This month
-              </p>
-              <div className="mt-3 grid grid-cols-2 gap-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-good-soft text-good">
-                    <IconArrowDownLeft size={15} />
-                  </span>
+              <section className="relative isolate overflow-hidden rounded-[22px] bg-gradient-to-br from-[#073f35] via-[#075640] to-[#08794b] p-6 text-white shadow-[0_18px_42px_-24px_rgba(4,76,51,.72)]">
+                <div aria-hidden className="pointer-events-none absolute -right-10 -top-20 -z-10 h-64 w-64 rounded-full border-[36px] border-white/[.055]" />
+                <div aria-hidden className="pointer-events-none absolute -bottom-28 right-24 -z-10 h-56 w-56 rounded-full bg-[#62d58b]/15 blur-3xl" />
+                <div className="relative z-10 flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-[11px] font-medium text-ink-faint">Income</p>
-                    <p className="font-display text-lg font-semibold tracking-tight text-good">
-                      {money(data.income30)}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-line-soft text-ink-soft">
-                    <IconArrowUpRight size={15} />
-                  </span>
-                  <div>
-                    <p className="text-[11px] font-medium text-ink-faint">Expenses</p>
-                    <p className="font-display text-lg font-semibold tracking-tight text-ink">
-                      {money(data.spend30)}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* Quick actions */}
-            <div className="card order-1 p-4 sm:p-5 lg:order-2">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-faint">Quick actions</p>
-              <div className="mt-3 grid grid-cols-4 gap-1.5 sm:gap-2.5">
-                {[
-                  { label: "Transfer", hint: "Between accounts", href: "/app/payments", Icon: IconSwap },
-                  { label: "Accounts", hint: "Manage your accounts", href: "/app/accounts", Icon: IconPlus },
-                  { label: "Pay a bill", hint: "Manage payments", href: "/app/payments", Icon: IconSend },
-                  { label: "Activity", hint: "Review spending", href: "/app/activity", Icon: IconArrowUpRight },
-                ].map(({ label, hint, href, Icon }) => (
-                  <button
-                    key={label}
-                    type="button"
-                    disabled={navigationPending}
-                    onClick={() => {
-                      setPendingAction(label);
-                      startNavigation(() => router.push(href));
-                    }}
-                    className="group flex min-h-[76px] min-w-0 flex-col items-center justify-center gap-1.5 rounded-xl border border-line bg-paper px-1.5 py-2 text-center transition hover:border-brand/50 hover:bg-brand-soft/30 active:scale-[.98] disabled:opacity-65 sm:flex-row sm:gap-2.5 sm:p-3 sm:text-left"
-                    aria-busy={navigationPending && pendingAction === label}
-                  >
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-soft text-brand sm:rounded-lg sm:bg-white sm:shadow-sm">
-                      {navigationPending && pendingAction === label ? <IconSpinner size={16} /> : <Icon size={16} />}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-[10px] font-bold text-ink sm:text-xs">{label}</span>
-                      <span className="mt-0.5 hidden truncate text-[10px] text-ink-faint sm:block">{navigationPending && pendingAction === label ? "Opening…" : hint}</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* ---- Account numbers ---- */}
-          <div className="mt-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-display text-lg font-semibold tracking-tight text-ink">Your accounts</h2>
-              <Link href="/app/accounts" className="text-[13px] font-semibold text-brand transition hover:text-brand-deep">Manage</Link>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
-              {data.accounts.map((a) => (
-                <Link key={a.id} href="/app/accounts" className="card group p-5 transition hover:border-brand/40">
-                  <div className="flex items-center justify-between">
-                    <TypeBadge type={a.type} />
-                    <span className="text-xs font-medium text-ink-faint">{a.currency} · •••• {a.last4}</span>
-                  </div>
-                  <p className="mt-2 truncate font-display text-base font-semibold text-ink group-hover:text-brand-deep">
-                    {a.name}
-                  </p>
-                  <p className="mt-1 truncate font-mono text-xs text-ink-faint">
-                    {a.accountNumber}
-                  </p>
-                  <p className="mt-2 font-display text-xl font-semibold tracking-tight text-ink">
-                    {money(a.balanceCents, a.currency)}
-                  </p>
-                </Link>
-              ))}
-              <Link href="/app/accounts" className="flex min-h-[130px] items-center justify-center gap-2 rounded-xl border border-dashed border-line bg-card/50 text-sm font-semibold text-ink-soft transition hover:border-brand/50 hover:bg-brand-soft/40 hover:text-brand-deep">
-                <IconPlus size={16} /> New account
-              </Link>
-            </div>
-          </div>
-
-          {/* ---- Charts + Activity ---- */}
-          <div className="mt-4 grid gap-3 sm:gap-4 lg:grid-cols-5">
-            <div className="space-y-3 lg:col-span-2">
-              <SpendChart weeks={data.weeks} />
-              <CategoryBreakdown byCategory={data.byCategory} />
-            </div>
-            <div className="lg:col-span-3 space-y-3">
-              <MonthlyChart monthly={data.monthly} />
-              {/* Recent activity */}
-              <div className="card overflow-hidden">
-                <div className="flex items-center justify-between border-b border-line-soft px-5 py-3.5">
-                  <h3 className="font-display text-base font-semibold text-ink">Recent activity</h3>
-                  <Link href="/app/activity" className="text-[13px] font-semibold text-brand transition hover:text-brand-deep">View all</Link>
-                </div>
-                {data.recent.length === 0 ? (
-                  <div className="flex flex-col items-center gap-2 px-5 py-10 text-center">
-                    <IconTrendingUp size={20} className="text-ink-faint" />
-                    <p className="text-sm text-ink-soft">Transactions will appear here.</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-line-soft">
-                    {data.recent.map((t) => {
-                      const dir = t.kind === "credit" || t.kind === "transfer_in" ? "in" : "out";
-                      const voided = t.status === "voided";
-                      return (
-                        <Link key={t.id} href="/app/activity" className="flex items-center gap-3 px-5 py-3 transition hover:bg-paper/70">
-                          <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${voided ? "bg-line-soft text-ink-faint" : dir === "in" ? "bg-good-soft text-good" : "bg-line-soft text-ink-soft"}`}>
-                            {voided ? <IconX size={15} /> : dir === "in" ? <IconArrowDownLeft size={15} /> : <IconArrowUpRight size={15} />}
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className={`block truncate text-sm font-semibold ${voided ? "text-ink-faint line-through" : "text-ink"}`}>
-                              {t.description}
-                            </span>
-                            <span className="block truncate text-xs text-ink-faint">
-                              {dayLabel(t.occurredAt)} · {t.accountName}
-                            </span>
-                          </span>
-                          <span className={`font-display text-sm font-semibold tracking-tight ${voided ? "text-ink-faint line-through" : dir === "in" ? "text-good" : "text-ink"}`}>
-                            {moneySigned(t.amountCents, dir, t.currency)}
-                          </span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* ---- Exchange Rates + Notifications ---- */}
-          <div className="mt-4 grid gap-3 sm:gap-4 lg:grid-cols-2">
-            <ExchangeRates rates={rates} />
-            <div className="card overflow-hidden">
-              <div className="flex items-center justify-between border-b border-line-soft px-5 py-3.5">
-                <h3 className="font-display text-base font-semibold text-ink">Notifications</h3>
-                <Link href="/app/notifications" className="text-[13px] font-semibold text-brand transition hover:text-brand-deep">View all</Link>
-              </div>
-              {notifications.length === 0 ? (
-                <div className="px-5 py-8 text-center">
-                  <p className="text-sm text-ink-soft">You're all caught up.</p>
-                </div>
-              ) : (
-                <div className="divide-y divide-line-soft">
-                  {notifications.map((n) => (
-                    <div key={n.id} className="px-5 py-3">
-                      <p className="text-[13px] font-semibold text-ink">{n.title}</p>
-                      <p className="mt-0.5 text-xs leading-snug text-ink-soft">{n.body}</p>
+                    <p className="text-xs font-semibold text-white/60">Total balance</p>
+                    <div className="mt-2 flex items-center gap-3">
+                      <p className="font-display text-[38px] font-semibold leading-none tracking-[-.045em]">{hidden ? "••••••••" : money(data.totalCents)}</p>
+                      <button type="button" onClick={() => setHidden((value) => !value)} className="rounded-full bg-white/10 p-2 text-white/70 hover:bg-white/20 hover:text-white" aria-label={hidden ? "Show balance" : "Hide balance"}>{hidden ? <IconEyeOff size={16}/> : <IconEye size={16}/>}</button>
                     </div>
-                  ))}
+                    <p className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-[#a8e8bd]"><IconTrendingUp size={14}/> {data.accounts.length} active account{data.accounts.length === 1 ? "" : "s"}</p>
+                  </div>
+                  <div aria-hidden className="hidden h-[112px] w-[180px] rotate-[-7deg] rounded-2xl border border-white/20 bg-gradient-to-br from-[#47b778]/85 via-[#166b4e] to-[#073b33] p-4 shadow-xl md:block">
+                    <div className="flex items-center justify-between"><span className="h-7 w-9 rounded-md border border-[#f3dc91]/70 bg-gradient-to-br from-[#f3dc91]/75 to-[#bfae70]/60"/><span className="text-[9px] font-bold tracking-[.18em] text-white/65">MERIDIAN</span></div>
+                    <div className="mt-7 flex items-end justify-between"><span className="font-mono text-[10px] tracking-[.16em] text-white/75">•••• {data.accounts[0]?.last4 ?? "••••"}</span><span className="font-display text-[11px] font-black italic text-white/85">CARD</span></div>
+                  </div>
                 </div>
-              )}
+                <div className="relative z-10 mt-6 grid grid-cols-4 gap-2 border-t border-white/15 pt-4 sm:max-w-[440px]">
+                  {[
+                    { label: "Send", href: "/app/payments", Icon: IconSend },
+                    { label: "Receive", href: "/app/accounts", Icon: IconArrowDownLeft },
+                    { label: "Exchange", href: "/app/payments", Icon: IconSwap },
+                    { label: "Top Up", href: "/app/payments", Icon: IconPlus },
+                  ].map(({ label, href, Icon }) => <Link key={label} href={href} className="group flex flex-col items-center gap-1.5 rounded-xl py-1.5 text-white/85 transition hover:bg-white/10 hover:text-white"><span className="grid h-9 w-9 place-items-center rounded-full bg-white/10 transition group-hover:bg-white/20"><Icon size={16}/></span><span className="text-[10px] font-semibold">{label}</span></Link>)}
+                </div>
+              </section>
+
+              <section aria-label="Accounts by currency">
+                <div className="mb-3 flex items-center justify-between"><h2 className="font-display text-base font-semibold text-ink">Accounts</h2><Link href="/app/accounts" className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:text-brand-deep">View all <IconArrowUpRight size={12}/></Link></div>
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                  {data.accounts.slice(0, 3).map((account) => <Link key={account.id} href="/app/accounts" className="rounded-2xl border border-[#edf0ed] bg-white p-4 shadow-[0_5px_18px_-14px_rgba(18,56,38,.22)] transition hover:-translate-y-0.5 hover:border-brand/30 hover:shadow-md">
+                    <div className="flex items-center gap-2"><span aria-label={`${account.currency} currency`} className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#f4f6f4] text-[17px]">{CURRENCY_FLAGS[account.currency] ?? <IconWallet size={14} className="text-[#758179]"/>}</span><span className="truncate text-xs font-semibold text-ink">{account.currency}</span></div>
+                    <p className="mt-3 truncate font-display text-[18px] font-semibold tracking-tight text-ink">{hidden ? "••••••" : money(account.balanceCents, account.currency)}</p>
+                    <p className="mt-1 text-[10px] text-ink-faint">{account.currency} · •••• {account.last4}</p>
+                  </Link>)}
+                  <Link href="/app/accounts" className="flex min-h-[105px] flex-col items-center justify-center rounded-2xl border border-dashed border-[#dce4de] bg-white/70 p-3 text-center transition hover:border-brand/40 hover:bg-brand-soft/30"><span className="grid h-8 w-8 place-items-center rounded-full bg-[#edf0ed] text-[#77837b]"><IconPlus size={16}/></span><span className="mt-2 text-xs font-semibold text-ink">Add account</span><span className="mt-0.5 text-[9px] text-ink-faint">Multi-currency available</span></Link>
+                </div>
+              </section>
+
+              <section>
+                <div className="mb-3 flex items-center justify-between"><h2 className="font-display text-base font-semibold text-ink">Quick actions</h2></div>
+                <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+                  {[
+                    { label: "Send Money", hint: "To bank accounts or people", href: "/app/payments", Icon: IconSend, tone: "bg-[#e7f6ed]", iconTone: "bg-[#c9eed8] text-[#14844a]" },
+                    { label: "Receive Money", hint: "View your accounts", href: "/app/accounts", Icon: IconArrowDownLeft, tone: "bg-[#e9f3fb]", iconTone: "bg-[#d2e9f8] text-[#347eb2]" },
+                    { label: "Order Card", hint: "Virtual or physical card", href: "/app/cards", Icon: IconWallet, tone: "bg-[#f1ecfa]", iconTone: "bg-[#e3d8f5] text-[#7855b3]" },
+                    { label: "Local Withdrawal", hint: "Card and ATM settings", href: "/app/cards", Icon: IconArrowUpRight, tone: "bg-[#fff4df]", iconTone: "bg-[#ffe8b9] text-[#bb8121]" },
+                  ].map(({ label, hint, href, Icon, tone, iconTone }) => <Link key={label} href={href} className={`group flex min-h-[130px] flex-col justify-between rounded-2xl p-4 transition hover:-translate-y-0.5 hover:shadow-md ${tone}`}>
+                    <span className={`grid h-10 w-10 place-items-center rounded-xl ${iconTone}`}><Icon size={18}/></span>
+                    <span><span className="block text-[13px] font-bold text-ink">{label}</span><span className="mt-1 block text-[10px] leading-snug text-ink-soft">{hint}</span><span className="mt-2 block text-ink/45"><IconArrowUpRight size={12}/></span></span>
+                  </Link>)}
+                </div>
+              </section>
+
+              <section className="overflow-hidden rounded-2xl border border-[#edf0ed] bg-white shadow-[0_5px_20px_-15px_rgba(18,56,38,.18)]">
+                <div className="flex items-center justify-between border-b border-[#edf0ed] px-5 py-4"><div><h2 className="font-display text-base font-semibold text-ink">Recent transactions</h2><p className="mt-0.5 text-[10px] text-ink-faint">Your latest account activity</p></div><Link href="/app/activity" className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:text-brand-deep">View all <IconArrowUpRight size={12}/></Link></div>
+                {data.recent.length === 0 ? <div className="px-5 py-10 text-center text-sm text-ink-soft">Transactions will appear here.</div> : <div>
+                  <div className="hidden grid-cols-[1.3fr_1fr_.8fr_.8fr] gap-3 bg-[#fafbf9] px-5 py-2.5 text-[9px] font-semibold uppercase tracking-wider text-ink-faint md:grid"><span>Type</span><span>Details</span><span>Amount</span><span>Status · Date</span></div>
+                  {data.recent.slice(0, 6).map((transaction) => { const inbound = transaction.kind === "credit" || transaction.kind === "transfer_in"; const voided = transaction.status === "voided"; return <Link key={transaction.id} href="/app/activity" className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 border-t border-[#f0f2f0] px-4 py-3 transition hover:bg-[#fafbf9] md:grid-cols-[1.3fr_1fr_.8fr_.8fr] md:gap-3 md:px-5">
+                    <span className="flex min-w-0 items-center gap-2.5"><span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full ${inbound ? "bg-[#e6f5eb] text-[#188750]" : "bg-[#f1f3f1] text-[#76827a]"}`}>{inbound ? <IconArrowDownLeft size={15}/> : <IconArrowUpRight size={15}/>}</span><span className="truncate text-xs font-semibold text-ink">{inbound ? "Received" : "Payment"}</span></span>
+                    <span className="min-w-0"><span className="block truncate text-xs font-medium text-ink">{transaction.description}</span><span className="block truncate text-[9px] text-ink-faint">{transaction.accountName} · {dayLabel(transaction.occurredAt)}</span></span>
+                    <span className={`text-right font-display text-xs font-semibold md:text-left ${inbound ? "text-good" : "text-ink"}`}>{moneySigned(transaction.amountCents, inbound ? "in" : "out", transaction.currency)}</span>
+                    <span className="hidden items-center justify-between gap-2 md:flex"><span className={`rounded-full px-2 py-1 text-[9px] font-semibold ${voided ? "bg-[#f1f2f1] text-ink-faint" : transaction.status === "completed" ? "bg-[#e5f6eb] text-[#188750]" : "bg-[#fff2dc] text-[#b68123]"}`}>{voided ? "Voided" : transaction.status === "completed" ? "Completed" : "Pending"}</span><span className="text-[9px] text-ink-faint">{dayLabel(transaction.occurredAt)}</span></span>
+                  </Link>; })}
+                </div>}
+              </section>
             </div>
-          </div>
 
-          {/* ---- QR and mobile money tools ---- */}
-          <div className="mt-4">
-            <MobileBankingModals accounts={data.accounts} />
+            <aside className="min-w-0 space-y-4 xl:col-span-4">
+              <Link href="/app/cards" className="group relative block min-h-[170px] overflow-hidden rounded-2xl bg-gradient-to-br from-[#061f1e] via-[#102b28] to-[#274139] p-5 text-white shadow-[0_14px_34px_-22px_rgba(8,38,31,.7)]">
+                <span className="inline-flex rounded-full bg-[#32bc78] px-2 py-1 text-[8px] font-bold uppercase tracking-wider text-white">Meridian Cards</span>
+                <div className="absolute -right-8 -top-8 h-36 w-36 rotate-[-14deg] rounded-2xl border border-white/15 bg-white/[.08] p-3 transition group-hover:rotate-[-9deg]"><span className="block h-5 w-7 rounded bg-[#e8d38d]/80"/><span className="mt-12 block font-mono text-[8px] tracking-widest text-white/65">•••• •••• •••• ••••</span></div>
+                <h2 className="relative mt-4 max-w-[60%] font-display text-lg font-semibold leading-tight">Your Meridian card<br/>for everyday spending</h2><span className="relative mt-3 inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1.5 text-[10px] font-semibold">Manage cards <IconArrowUpRight size={12}/></span>
+              </Link>
+
+              <AccountSummary accounts={data.accounts} />
+
+              <section className="overflow-hidden rounded-2xl border border-[#edf0ed] bg-white shadow-[0_5px_20px_-15px_rgba(18,56,38,.18)]">
+                <div className="flex items-center justify-between border-b border-[#edf0ed] px-4 py-3.5"><h2 className="font-display text-sm font-semibold text-ink">Your recipients</h2><Link href="/app/payees" className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand">View all <IconArrowUpRight size={11}/></Link></div>
+                {payees.length ? payees.slice(0, 3).map((payee) => <Link key={payee.id} href="/app/payees" className="flex items-center gap-2.5 border-b border-[#f0f2f0] px-4 py-3 last:border-0 hover:bg-[#fafbf9]"><span className="grid h-8 w-8 place-items-center rounded-full bg-[#eef1ef] text-[10px] font-bold text-[#748078]">{payee.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase()}</span><span className="min-w-0 flex-1"><span className="block truncate text-[11px] font-semibold text-ink">{payee.name}</span><span className="block truncate text-[9px] text-ink-faint">{payee.methodDetail}</span></span><span className="rounded-full bg-[#f3f1e8] px-2 py-1 text-[8px] font-medium capitalize text-[#8a805f]">{payee.methodType}</span></Link>) : <p className="px-4 py-6 text-center text-xs text-ink-soft">Saved recipients will appear here.</p>}
+              </section>
+
+              <section className="rounded-2xl border border-[#edf0ed] bg-white p-4 shadow-[0_5px_20px_-15px_rgba(18,56,38,.18)]"><div className="flex gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#eef3f0] text-[#76827a]"><IconCircleHelp size={18}/></span><div><h2 className="text-xs font-bold text-ink">Need help?</h2><p className="mt-1 text-[10px] leading-relaxed text-ink-soft">Our support team can help with account questions.</p><Link href="/contact" className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#073f35] px-3 py-1.5 text-[9px] font-semibold text-white">Contact support <IconArrowUpRight size={11}/></Link></div></div></section>
+
+              <section className="overflow-hidden rounded-2xl border border-[#edf0ed] bg-white"><div className="flex items-center justify-between border-b border-[#edf0ed] px-4 py-3"><h2 className="text-xs font-bold text-ink">Notifications</h2><Link href="/app/notifications" className="text-[10px] font-semibold text-brand">View all</Link></div>{notifications.slice(0, 2).map((notification) => <div key={notification.id} className="border-b border-[#f0f2f0] px-4 py-2.5 last:border-0"><p className="truncate text-[10px] font-semibold text-ink">{notification.title}</p><p className="mt-0.5 line-clamp-2 text-[9px] leading-snug text-ink-soft">{notification.body}</p></div>)}{!notifications.length && <p className="px-4 py-4 text-[10px] text-ink-soft">You’re all caught up.</p>}</section>
+            </aside>
           </div>
-        </>
-      )}
+        )}
       </div>
-
       <div className="sm:hidden">
         {loadErr ? <div className="card p-8 text-center"><p className="text-sm font-semibold text-rose">Couldn’t load your dashboard.</p><button className="btn-outline mt-4" onClick={load}>Try again</button></div>
           : !data ? <div className="space-y-4"><Skeleton className="h-48 rounded-2xl"/><div className="grid grid-cols-5 gap-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-16 rounded-xl" />)}</div><Skeleton className="h-40 rounded-2xl"/></div>

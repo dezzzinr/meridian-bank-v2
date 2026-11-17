@@ -90,9 +90,10 @@ export function SecurityClient() {
         method: "POST",
         body: JSON.stringify({ action: "set_pin", pin }),
       });
-      toast("success", "Transaction PIN configured.");
+      toast("success", "Authorization PIN configured.");
       setPin("");
       setConfirmPin("");
+      window.dispatchEvent(new Event("meridian:user-updated"));
       loadSecurity();
     } catch (err) {
       toast("error", "Failed to save PIN.");
@@ -234,7 +235,7 @@ export function SecurityClient() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* 1. Two-Factor Authentication & Biometrics */}
-        <section className="card p-5 space-y-5">
+        <section id="two-factor-settings" className="card scroll-mt-24 p-5 space-y-5">
           <div className="flex items-center gap-2.5 border-b border-line-soft pb-3">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-soft text-brand-deep">
               <IconShield size={18} />
@@ -258,7 +259,7 @@ export function SecurityClient() {
             </button>
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-line-soft">
+          <div id="biometrics-settings" className="flex items-center justify-between pt-2 border-t border-line-soft scroll-mt-24">
             <div>
               <p className="text-sm font-semibold flex items-center gap-1.5">
                 <IconFingerprint size={16} className="text-brand" /> Biometric Authentication
@@ -306,22 +307,22 @@ export function SecurityClient() {
           </div>
         </section>
 
-        {/* 2. Transaction PIN */}
+        {/* 2. Authorization PIN */}
         <section className="card p-5 space-y-4">
           <div className="flex items-center gap-2.5 border-b border-line-soft pb-3">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-soft text-brand-deep">
               <IconKey size={18} />
             </span>
-            <h2 className="font-display text-base font-semibold text-ink">Transaction PIN</h2>
+            <h2 className="font-display text-base font-semibold text-ink">Authorization PIN</h2>
           </div>
 
           <p className="text-xs text-ink-soft">
-            A 4-digit security PIN required before any money transfer or external bill payment is authorized.
+            Set a 4-digit PIN to authorize transfers and outgoing payments. You must set one before sending money.
           </p>
 
           <form onSubmit={handleSetPin} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <Field label="4-digit PIN">
+              <Field label="4-digit Authorization PIN">
                 <Input
                   type="password"
                   inputMode="numeric"
@@ -347,7 +348,7 @@ export function SecurityClient() {
               </Field>
             </div>
             <button className="btn-primary w-full py-2 text-xs" disabled={busy === "pin"}>
-              {busy === "pin" ? <IconSpinner size={14} /> : "Save Transaction PIN"}
+              {busy === "pin" ? <IconSpinner size={14} /> : "Save Authorization PIN"}
             </button>
           </form>
         </section>
@@ -424,7 +425,7 @@ export function SecurityClient() {
       </div>
 
       {/* 5. Active Sessions & Devices */}
-      <section className="card p-5 space-y-4">
+      <section id="active-sessions" className="card scroll-mt-24 p-5 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line-soft pb-3">
           <div className="flex items-center gap-2.5">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-soft text-brand-deep">

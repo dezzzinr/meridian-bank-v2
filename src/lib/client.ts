@@ -24,7 +24,8 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
   const headers = new Headers(init.headers);
   const token = getToken();
   if (token && !headers.has("x-meridian-session")) headers.set("x-meridian-session", token);
-  if (init.body && !headers.has("content-type")) headers.set("content-type", "application/json");
+  const isFormData = typeof FormData !== "undefined" && init.body instanceof FormData;
+  if (init.body && !isFormData && !headers.has("content-type")) headers.set("content-type", "application/json");
   return fetch(path, { ...init, headers });
 }
 

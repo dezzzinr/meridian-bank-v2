@@ -815,7 +815,7 @@ export function AdminUserControlModal({
                     />
                   </label>
 
-                  <Field label="Override Transaction PIN (4 Digits)" hint="Leave blank to preserve current PIN.">
+                  <Field label="Override Authorization PIN (4 Digits)" hint="Leave blank to preserve current PIN.">
                     <Input
                       type="password"
                       maxLength={4}

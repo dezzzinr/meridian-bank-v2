@@ -39,6 +39,17 @@ export default function AppAreaLayout({ children }: { children: ReactNode }) {
     };
   }, [router]);
 
+  useEffect(() => {
+    const refreshUser = () => {
+      void apiFetch("/api/auth/me", { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((u: CurrentUser | null) => { if (u) setUser(u); })
+        .catch(() => {});
+    };
+    window.addEventListener("meridian:user-updated", refreshUser);
+    return () => window.removeEventListener("meridian:user-updated", refreshUser);
+  }, []);
+
   if (!user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-paper">

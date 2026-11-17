@@ -6,6 +6,8 @@ import { accountAccess, bankingError, bankingUser, lockedActiveUser, positiveId,
 import { parseAmount } from "@/lib/banking";
 import { generateRefNumber } from "@/lib/ids";
 import { money } from "@/lib/format";
+import { emailUserNotification } from "@/lib/email";
+import { verifyPassword } from "@/lib/password";
 
 export async function POST(req: Request) {
   try {
@@ -66,7 +68,11 @@ export async function POST(req: Request) {
       const ref = generateRefNumber();
 
       await db.transaction(async (tx) => {
-        await lockedActiveUser(tx, user.id);
+        const owner = await lockedActiveUser(tx, user.id);
+        if (!owner.transactionPinHash) throw new HttpError(403, "Set your 4-digit authorization PIN in Security Center before making payments.");
+        if (typeof body.transactionPin !== "string" || !/^\d{4}$/.test(body.transactionPin) || !verifyPassword(body.transactionPin, owner.transactionPinHash)) {
+          throw new HttpError(403, "Incorrect authorization PIN. Payment cancelled.");
+        }
         await tx.insert(transfers).values({
           userId: user.id,
           sourceAccountId: source.id,
@@ -102,6 +108,8 @@ export async function POST(req: Request) {
         });
       });
 
+      await emailUserNotification(user.id, "QR demo payment completed", "A simulated QR payment was recorded. Sign in to review the activity.", `qr-payment-${ref}`);
+
       return Response.json({ ok: true, reference: ref });
     }
 
@@ -125,7 +133,11 @@ export async function POST(req: Request) {
       const ref = generateRefNumber();
 
       await db.transaction(async (tx) => {
-        await lockedActiveUser(tx, user.id);
+        const owner = await lockedActiveUser(tx, user.id);
+        if (!owner.transactionPinHash) throw new HttpError(403, "Set your 4-digit authorization PIN in Security Center before making payments.");
+        if (typeof body.transactionPin !== "string" || !/^\d{4}$/.test(body.transactionPin) || !verifyPassword(body.transactionPin, owner.transactionPinHash)) {
+          throw new HttpError(403, "Incorrect authorization PIN. Payment cancelled.");
+        }
         await tx.insert(transfers).values({
           userId: user.id,
           sourceAccountId: source.id,
@@ -159,6 +171,8 @@ export async function POST(req: Request) {
           body: `${money(amount, source.currency)} dispatched to ${phone} via ${provider}.`,
         });
       });
+
+      await emailUserNotification(user.id, "Mobile money demo payment recorded", "A simulated mobile money payment was recorded. It was not sent to a mobile wallet provider. Sign in to review the activity.", `mobile-payment-${ref}`);
 
       return Response.json({ ok: true, reference: ref });
     }

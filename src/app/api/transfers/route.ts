@@ -1,6 +1,6 @@
 import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { accounts, notifications, payees, transactions, transfers, users } from "@/db/schema";
+import { accounts, notifications, payees, transactions, transfers } from "@/db/schema";
 import { HttpError, readBody, str } from "@/lib/api";
 import { accountAccess, bankingUser, bankingError, lockedActiveUser, positiveId, privateHeaders } from "@/lib/banking-server";
 import { isTermLocked, parseAmount } from "@/lib/banking";
@@ -8,6 +8,7 @@ import { listTransfers, settleAgedPending } from "@/lib/queries";
 import { money } from "@/lib/format";
 import { generateRefNumber } from "@/lib/ids";
 import { verifyPassword } from "@/lib/password";
+import { emailUserNotification } from "@/lib/email";
 
 export async function GET() {
   try {
@@ -26,22 +27,12 @@ export async function POST(req: Request) {
     const note = body.note == null ? null : str(body.note, 0, 140);
     if (body.note != null && note === null) throw new HttpError(400, "Note must be 140 characters or fewer.");
 
-    // Transaction PIN enforcement if user set one
-    if (user.hasTransactionPin && body.transactionPin) {
-      const [u] = await db.select({ pinHash: users.transactionPinHash }).from(users).where(eq(users.id, user.id));
-      if (u?.pinHash && !verifyPassword(String(body.transactionPin), u.pinHash)) {
-        throw new HttpError(403, "Invalid transaction PIN entered.");
-      }
-    }
-
     const result = await db.transaction(async (tx) => {
       const owner = await lockedActiveUser(tx, user.id);
 
-      // Verify transaction PIN strictly if set
-      if (owner.transactionPinHash) {
-        if (!body.transactionPin || !verifyPassword(String(body.transactionPin), owner.transactionPinHash)) {
-          throw new HttpError(403, "Incorrect transaction PIN. Transfer cancelled.");
-        }
+      if (!owner.transactionPinHash) throw new HttpError(403, "Set your 4-digit authorization PIN in Security Center before sending money.");
+      if (typeof body.transactionPin !== "string" || !/^\d{4}$/.test(body.transactionPin) || !verifyPassword(body.transactionPin, owner.transactionPinHash)) {
+        throw new HttpError(403, "Incorrect authorization PIN. Transfer cancelled.");
       }
 
       // 1. Source Account verification
@@ -205,6 +196,15 @@ export async function POST(req: Request) {
 
       return transfer;
     });
+
+    await emailUserNotification(
+      user.id,
+      result.status === "completed" ? "Transfer completed" : "Payment submitted",
+      result.status === "completed"
+        ? "A demo transfer between your accounts is complete. Sign in to review the details."
+        : "A payment was submitted and is pending in the demo. Sign in to review its status and details.",
+      `transfer-${result.id}`,
+    );
 
     return Response.json(
       { id: result.id, status: result.status, referenceNumber: result.referenceNumber },

@@ -67,6 +67,11 @@ export function ActivityClient() {
 
   useEffect(load, []);
 
+  useEffect(() => {
+    const initialQuery = new URLSearchParams(window.location.search).get("q");
+    if (initialQuery) setQ(initialQuery);
+  }, []);
+
   const selected = data?.transactions.find((t) => t.id === selectedId) ?? null;
 
   const filtered = useMemo(() => {
