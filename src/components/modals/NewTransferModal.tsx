@@ -339,7 +339,6 @@ export function NewTransferModal({ accounts, open, onClose, onDone }: { accounts
               <div className="space-y-3 rounded-xl border border-line-soft bg-paper/50 p-3.5">
                 <div className="flex items-center justify-between gap-2"><p className="text-xs font-semibold text-ink-soft">{channelInfo.label} details</p>
                   {channel === "person" && <button type="button" className="text-[11px] font-semibold text-brand underline" onClick={() => { setTab("payee"); setDestId(0); }}>Choose saved payee</button>}
-                  {tab === "payee" && <button type="button" className="text-[11px] font-semibold text-brand underline" onClick={() => { setTab("new_recipient"); setDestId(0); }}>Enter new details</button>}
                 </div>
                 <Field label="Recipient Full Name">
                   <Input
